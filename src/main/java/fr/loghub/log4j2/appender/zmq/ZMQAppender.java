@@ -1,7 +1,6 @@
 package fr.loghub.log4j2.appender.zmq;
 
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
@@ -11,11 +10,9 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.Required;
-
-import zmq.socket.Sockets;
+import org.zeromq.SocketType;
 
 @Plugin(name = "ZMQ", category = Node.CATEGORY, elementType = Appender.ELEMENT_TYPE, printObject = true)
-//@Accessors(chain=true)
 public class ZMQAppender extends AbstractAppender {
 
     public static class ZMQBuilder extends AbstractAppender.Builder<ZMQBuilder>
@@ -23,21 +20,36 @@ public class ZMQAppender extends AbstractAppender {
 
         @PluginBuilderAttribute("endpoint")
         @Required(message = "No URL provided for ZMQ endpoint")
-        private String endpoint;
+        String endpoint;
 
         @PluginBuilderAttribute("type")
-        private String type = Sockets.PUB.name();
+        String type = SocketType.PUB.name();
 
         @PluginBuilderAttribute("method")
-        private String method = Method.CONNECT.name();
+        String method = Method.CONNECT.name();
 
         @PluginBuilderAttribute("hwm")
-        private int hwm = 1000;
+        int hwm = 1000;
+
+        @PluginBuilderAttribute("maxMsgSize")
+        long maxMsgSize = -1;
+
+        @PluginBuilderAttribute("linger")
+        int linger = -1;
 
         @Override
         public ZMQAppender build() {
-            System.out.println("build " + endpoint);
             return new ZMQAppender(this);
+        }
+
+        public ZMQConfiguration configuration() {
+            return new ZMQConfiguration(getConfiguration().getLoggerContext(),
+                                        endpoint,
+                                        SocketType.valueOf(type.toUpperCase(Locale.US)),
+                                        Method.valueOf(method.toUpperCase(Locale.US)),
+                                        hwm,
+                                        maxMsgSize,
+                                        linger); 
         }
 
     }
@@ -47,31 +59,18 @@ public class ZMQAppender extends AbstractAppender {
         return new ZMQBuilder();
     }
 
-    private final Publisher publisher;
+    private final ZMQManager manager;
 
     protected ZMQAppender(ZMQBuilder builder) {
         super(builder.getName(), builder.getFilter(), builder.getLayout(), builder.isIgnoreExceptions(), builder.getPropertyArray());
-        publisher = Publisher.getBuilder()
-                        .setEndpoint(builder.endpoint)
-                        .setMethod(Method.valueOf(builder.method.toUpperCase(Locale.ENGLISH)))
-                        .setType(Sockets.valueOf(builder.type.toUpperCase(Locale.ENGLISH)))
-                        .setHwm(builder.hwm)
-                        .build();
-    }
-
-    @Override
-    public boolean stop(long timeout, TimeUnit timeUnit) {
-        setStopping();
-        publisher.close();
-        setStopped();
-        return true;
+        manager = ZMQManager.getManager(builder.getName(), ZMQManager.FACTORY, builder.configuration());
     }
 
     @Override
     public void append(LogEvent event) {
         byte[] formattedMessage = getLayout().toByteArray(event);
-        if (! publisher.getLogQueue().offer(getLayout().toByteArray(event))) {
-            LOGGER.error("Appender {} could not send message {} to JeroMQ", getName(), formattedMessage);
+        if (! manager.getLogQueue().offer(formattedMessage)) {
+            LOGGER.error("Appender {} could not send message {} to ZMQ", getName());
         }
     }
 
