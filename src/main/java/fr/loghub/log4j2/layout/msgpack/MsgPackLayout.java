@@ -12,58 +12,30 @@ import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Node;
-import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.layout.AbstractLayout;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
-import org.apache.logging.log4j.core.util.KeyValuePair;
 import org.apache.logging.log4j.message.MapMessage;
 import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.message.ObjectArrayMessage;
 
 @Plugin(name = "MsgPackLayout", category = Node.CATEGORY, elementType = Layout.ELEMENT_TYPE, printObject = true)
 public class MsgPackLayout extends AbstractLayout<Message> {
-    
-    protected static class ResolvableKeyValuePair {
-
-        final String key;
-        final String value;
-        final boolean valueNeedsLookup;
-
-        ResolvableKeyValuePair(KeyValuePair pair) {
-            this.key = pair.getKey();
-            this.value = pair.getValue();
-            this.valueNeedsLookup = value != null && value.contains("${");
-        }
-    }
 
     public static class Builder extends AbstractLayout.Builder<Builder> 
     implements org.apache.logging.log4j.core.util.Builder<MsgPackLayout> {
 
         @PluginElement("AdditionalField")
-        private KeyValuePair[] additionalFields = new KeyValuePair[0];
+        private AdditionalField[] additionalFields = new AdditionalField[0];
 
         @PluginBuilderAttribute
         private boolean locationInfo = false;
 
         @PluginBuilderAttribute
         private boolean properties = false;
-
-        public Builder setFooter(byte[] footer) {
-            throw new UnsupportedOperationException("No footer in msgpack");
-        }
-
-        public Builder setHeader(byte[] header) {
-            throw new UnsupportedOperationException("No header in msgpack");
-        }
-        
-        public Builder setProperty(Property propertys) {
-            throw new UnsupportedOperationException("No header in msgpack");
-        }
-
 
         @Override
         public MsgPackLayout build() {
@@ -77,16 +49,16 @@ public class MsgPackLayout extends AbstractLayout<Message> {
         return new Builder();
     }
 
-    private final ResolvableKeyValuePair[] additionalFields;
+    private final AdditionalField[] additionalFields;
     private final boolean locationInfo;
     private final boolean properties;
 
     protected MsgPackLayout(Builder builder) {
         super(builder.getConfiguration(), null, null);
-        additionalFields = Arrays.stream(builder.additionalFields).map(ResolvableKeyValuePair::new).toArray(ResolvableKeyValuePair[]::new);
+        //additionalFields = Arrays.stream(builder.additionalFields).map(ResolvableKeyValuePair::new).toArray(ResolvableKeyValuePair[]::new);
+        additionalFields = builder.additionalFields;
         locationInfo = builder.locationInfo;
         properties = builder.properties;
-        System.out.println(Arrays.toString(additionalFields));
     }
 
     private Map<String, Object> resolveThrowable(Throwable t) {
@@ -151,13 +123,13 @@ public class MsgPackLayout extends AbstractLayout<Message> {
             }
             if (additionalFields.length > 0) {
                 StrSubstitutor strSubstitutor = configuration.getStrSubstitutor();
-                Arrays.stream(additionalFields).filter(pair -> ! eventMap.containsKey(pair.key)).forEach(pair -> {
+                Arrays.stream(additionalFields).filter(pair -> ! eventMap.containsKey(pair.name)).forEach(pair -> {
                     if (pair.valueNeedsLookup) {
                         // Resolve value
-                        eventMap.put(pair.key, strSubstitutor.replace(event, pair.value));
+                        eventMap.put(pair.name, strSubstitutor.replace(event, pair.value));
                     } else {
                         // Plain text value
-                        eventMap.put(pair.key, pair.value);
+                        eventMap.put(pair.name, pair.value);
                     }
                 });
             }
