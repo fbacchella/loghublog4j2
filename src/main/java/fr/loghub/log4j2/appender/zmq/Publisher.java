@@ -65,8 +65,6 @@ class Publisher extends Thread {
                             }
                         }
                     } catch (zmq.ZError.IOException | java.nio.channels.ClosedSelectorException | org.zeromq.ZMQException e) {
-                        // Using hash code if OnlyOnceErrorHandler is used
-                        //errorHandler.error("Failed ZMQ socket", e, socket.hashCode());
                         synchronized (ctx) {
                             // If it's not closed, drop the socket, to recreate a new one
                             if (!closed) {

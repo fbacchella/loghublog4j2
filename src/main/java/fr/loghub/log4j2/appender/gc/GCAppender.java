@@ -69,7 +69,6 @@ public class GCAppender extends AbstractAppender {
             try {
                 NotificationListener nl = this::getEvent;
                 listeners.put(on, nl);
-                //ObjectName listener = new ObjectName("fr.loghub.log4j2.appender.gc.listnerers", "name", on.getKeyProperty("name"));
                 server.addNotificationListener(on, nl, null, null);
             } catch (InstanceNotFoundException ex) {
                 throw new ConfigurationException(ex);
