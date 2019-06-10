@@ -63,3 +63,147 @@ In this exemple, the listening port of a ZMQ handler is defined using the java p
     </Loggers>
 </Configuration>
 ```
+
+A example of GC log sent:
+
+```
+   {
+    "threadId": 9,
+    "type": "demort",
+    "port": "51629",
+    "@timestamp": "2019-06-10T17:10:55.898+0200",
+    "level": "FATAL",
+    "values": {
+      "gcAction": "end of major GC",
+      "gcCause": "System.gc()",
+      "gcInfo": {
+        "duration": 18,
+        "memoryUsageBeforeGc": [
+          {
+            "value": {
+              "init": 0,
+              "committed": 2228224,
+              "used": 2109344,
+              "max": 1073741824
+            },
+            "key": "Compressed Class Space"
+          },
+          {
+            "value": {
+              "init": 11010048,
+              "committed": 11010048,
+              "used": 9656512,
+              "max": 11010048
+            },
+            "key": "PS Survivor Space"
+          },
+          {
+            "value": {
+              "init": 179306496,
+              "committed": 179306496,
+              "used": 81936,
+              "max": 2863661056
+            },
+            "key": "PS Old Gen"
+          },
+          {
+            "value": {
+              "init": 0,
+              "committed": 17694720,
+              "used": 17159016,
+              "max": -1
+            },
+            "key": "Metaspace"
+          },
+          {
+            "value": {
+              "init": 67108864,
+              "committed": 67108864,
+              "used": 0,
+              "max": 1409286144
+            },
+            "key": "PS Eden Space"
+          },
+          {
+            "value": {
+              "init": 2555904,
+              "committed": 3735552,
+              "used": 3697920,
+              "max": 251658240
+            },
+            "key": "Code Cache"
+          }
+        ],
+        "GcThreadCount": 8,
+        "startTime": 1094,
+        "endTime": 1112,
+        "id": 1,
+        "memoryUsageAfterGc": [
+          {
+            "value": {
+              "init": 0,
+              "committed": 2228224,
+              "used": 2109344,
+              "max": 1073741824
+            },
+            "key": "Compressed Class Space"
+          },
+          {
+            "value": {
+              "init": 11010048,
+              "committed": 11010048,
+              "used": 0,
+              "max": 11010048
+            },
+            "key": "PS Survivor Space"
+          },
+          {
+            "value": {
+              "init": 179306496,
+              "committed": 179306496,
+              "used": 9155648,
+              "max": 2863661056
+            },
+            "key": "PS Old Gen"
+          },
+          {
+            "value": {
+              "init": 0,
+              "committed": 17694720,
+              "used": 17159016,
+              "max": -1
+            },
+            "key": "Metaspace"
+          },
+          {
+            "value": {
+              "init": 67108864,
+              "committed": 67108864,
+              "used": 0,
+              "max": 1409286144
+            },
+            "key": "PS Eden Space"
+          },
+          {
+            "value": {
+              "init": 2555904,
+              "committed": 3735552,
+              "used": 3697920,
+              "max": 251658240
+            },
+            "key": "Code Cache"
+          }
+        ]
+      },
+      "gcName": "PS MarkSweep"
+    },
+    "thread": "Service Thread",
+    "loggerName": "gc.PS MarkSweep",
+    "threadPriority": 9,
+    "instant": {
+      "nano": 887000000,
+      "epochSecond": 1560179455
+    }
+  }
+```
+
