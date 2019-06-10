@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="fatal" packages="fr.loghub.log4j2" verbose="true">
+    <Appenders>
+        <ZMQ name="ZMQAppender">
+            <endpoint>tcp://localhost:${sys:fr.loghub.log4j2.test.port}</endpoint>
+            <type>push</type>
+            <method>connect</method>
+            <hwm>1000</hwm>
+            <properties>true</properties>
+            <MsgPackLayout>
+                <AdditionalField name="a">1</AdditionalField>
+                <AdditionalField name="b">${sys:fr.loghub.log4j2.test.port}</AdditionalField>
+            </MsgPackLayout>
+        </ZMQ>
+        <GCAppender name="GCAppender">
+            <level>FATAL</level>
+        </GCAppender>
+    </Appenders>
+    <Loggers>
+        <Root level="DEBUG">
+            <AppenderRef ref="ZMQAppender" />
+        </Root>
+    </Loggers>
+</Configuration>
