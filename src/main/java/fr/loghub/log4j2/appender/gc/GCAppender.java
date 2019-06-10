@@ -2,13 +2,17 @@ package fr.loghub.log4j2.appender.gc;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 import javax.management.InstanceNotFoundException;
+import javax.management.ListenerNotFoundException;
 import javax.management.MBeanServer;
 import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
 import javax.management.openmbean.CompositeDataSupport;
 
 import org.apache.logging.log4j.Level;
@@ -52,22 +56,40 @@ public class GCAppender extends AbstractAppender {
 
     private final Level level;
     private final String parent;
+    
+    private final Map<ObjectName, NotificationListener> listeners;
 
     protected GCAppender(Builder builder) {
         super(builder.getName(), builder.getFilter(), builder.getLayout(), builder.isIgnoreExceptions(), builder.getPropertyArray());
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
 
         List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
-
+        listeners = new HashMap<>(gcs.size());
         gcs.stream().map(GarbageCollectorMXBean::getObjectName).forEach(on -> {
             try {
-                server.addNotificationListener(on, this::getEvent, null, null);
+                NotificationListener nl = this::getEvent;
+                listeners.put(on, nl);
+                //ObjectName listener = new ObjectName("fr.loghub.log4j2.appender.gc.listnerers", "name", on.getKeyProperty("name"));
+                server.addNotificationListener(on, nl, null, null);
             } catch (InstanceNotFoundException ex) {
                 throw new ConfigurationException(ex);
             }
         });
         level = Level.getLevel(builder.level.toUpperCase(Locale.US));
         parent = builder.parent;
+    }
+
+    @Override
+    protected void setStopping() {
+        super.setStopping();
+        MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+        listeners.forEach((t, u) -> {
+            try {
+                server.removeNotificationListener(t, u);
+            } catch (InstanceNotFoundException | ListenerNotFoundException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private void getEvent(Notification notification, Object handback) {
