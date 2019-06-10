@@ -34,9 +34,6 @@ public class MsgPackLayout extends AbstractLayout<Message> {
         @PluginBuilderAttribute
         private boolean locationInfo = false;
 
-        @PluginBuilderAttribute
-        private boolean properties = false;
-
         @Override
         public MsgPackLayout build() {
             return new MsgPackLayout(this);
@@ -51,21 +48,18 @@ public class MsgPackLayout extends AbstractLayout<Message> {
 
     private final AdditionalField[] additionalFields;
     private final boolean locationInfo;
-    private final boolean properties;
 
     protected MsgPackLayout(Builder builder) {
         super(builder.getConfiguration(), null, null);
-        //additionalFields = Arrays.stream(builder.additionalFields).map(ResolvableKeyValuePair::new).toArray(ResolvableKeyValuePair[]::new);
         additionalFields = builder.additionalFields;
         locationInfo = builder.locationInfo;
-        properties = builder.properties;
     }
 
     private Map<String, Object> resolveThrowable(Throwable t) {
         Map<String, Object> exception = new HashMap<>(4);
         Optional.ofNullable(t.getMessage()).ifPresent(m -> exception.put("message", m));
         exception.put("name", t.getClass().getName());
-        List<String> stack = Arrays.stream(t.getStackTrace()).map(i -> i.toString()).map(i -> i.replace("\t", "")).collect(Collectors.toList());
+        List<String> stack = Arrays.stream(t.getStackTrace()).map(StackTraceElement::toString).map(i -> i.replace("\t", "")).collect(Collectors.toList());
         exception.put("extendedStackTrace", stack);
         Optional.ofNullable(t.getCause())
         .map(this::resolveThrowable)
@@ -103,12 +97,10 @@ public class MsgPackLayout extends AbstractLayout<Message> {
                 eventMap.put("message", event.getMessage().getFormattedMessage());
             }
             Optional.ofNullable(event.getThrown()).ifPresent(t -> eventMap.put("thrown", resolveThrowable(t)));
-            if (properties) {
-                Optional.of(event.getContextStack()).filter(cs -> cs.getDepth() > 0).ifPresent(cs -> eventMap.put("contextStack", cs.asList()));
-            }
             // Ignoring end of batch eventMap.put("endOfBatch", event.isEndOfBatch());
-            eventMap.put("loggerFqcn", event.getLoggerFqcn());
-            eventMap.put("contextData", event.getContextData());
+            // Ignoring fqcn of logger eventMap.put("loggerFqcn", event.getLoggerFqcn());
+            Optional.of(event.getContextData()).filter(cd -> cd.size() > 0).ifPresent(cd -> eventMap.put("contextData", cd));
+            Optional.of(event.getContextStack()).filter(cs -> cs.getDepth() > 0).ifPresent(cs -> eventMap.put("contextStack", cs.asList()));
             eventMap.put("threadId", event.getThreadId());
             eventMap.put("threadPriority", event.getThreadPriority());
             if (locationInfo) {
