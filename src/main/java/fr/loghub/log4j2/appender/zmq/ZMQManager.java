@@ -7,7 +7,7 @@ import org.apache.logging.log4j.core.appender.ManagerFactory;
 
 public class ZMQManager extends AbstractManager {
 
-    public static final ManagerFactory<ZMQManager, ZMQConfiguration> FACTORY = (n,d) -> new ZMQManager(n, d);
+    public static final ManagerFactory<ZMQManager, ZMQConfiguration> FACTORY = ZMQManager::new;
 
     private final Publisher publisher;
 

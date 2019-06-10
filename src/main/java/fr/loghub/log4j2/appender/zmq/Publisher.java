@@ -31,8 +31,6 @@ class Publisher extends Thread {
         logQueue = new ArrayBlockingQueue<>(config.getHwm());
         setName("Log4J2ZMQPublishingThread");
         setDaemon(true);
-        // Workaround https://github.com/zeromq/jeromq/issues/545
-        ctx.getContext();
         closed = false;
         start();
     }

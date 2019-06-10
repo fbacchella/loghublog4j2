@@ -61,7 +61,7 @@ public class GCAppender extends AbstractAppender {
 
         gcs.stream().map(GarbageCollectorMXBean::getObjectName).forEach(on -> {
             try {
-                server.addNotificationListener(on, (x,y) -> getEvent(x, y), null, null);
+                server.addNotificationListener(on, this::getEvent, null, null);
             } catch (InstanceNotFoundException ex) {
                 throw new ConfigurationException(ex);
             }

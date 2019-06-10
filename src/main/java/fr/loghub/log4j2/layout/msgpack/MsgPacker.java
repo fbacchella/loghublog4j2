@@ -22,7 +22,7 @@ import org.msgpack.value.ValueFactory.MapBuilder;
 
 class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
 
-    private static final ThreadLocal<MessageBufferPacker> packer = ThreadLocal.withInitial(() -> MessagePack.newDefaultBufferPacker());
+    private static final ThreadLocal<MessageBufferPacker> packer = ThreadLocal.withInitial(MessagePack::newDefaultBufferPacker);
     
     private final Set<String> keys;
 
@@ -63,18 +63,14 @@ class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
             return ValueFactory.newInteger(((Number)m).longValue());
         } else if (m instanceof Map) {
             MapBuilder builder = ValueFactory.newMapBuilder();
-            ((Map<?, ?>)m).forEach((k,v) ->  {
-                builder.put(map(k), map(v));
-            });
+            ((Map<?, ?>)m).forEach((k,v) -> builder.put(map(k), map(v)));
             return builder.build();
         } else if (m instanceof Instant) {
             byte[] bytes = getInstantBytes((Instant) m);
             return ValueFactory.newExtension((byte)-1, bytes);
         } else if (m instanceof ReadOnlyStringMap) {
             MapBuilder builder = ValueFactory.newMapBuilder();
-            ((ReadOnlyStringMap)m).forEach((k,v) ->  {
-                builder.put(map(k), map(v));
-            });
+            ((ReadOnlyStringMap)m).forEach((k,v) -> builder.put(map(k), map(v)));
             return builder.build();
         } else {
             return ValueFactory.newString(m.toString());

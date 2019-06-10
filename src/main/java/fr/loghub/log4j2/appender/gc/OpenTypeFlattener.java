@@ -14,6 +14,9 @@ import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
 class OpenTypeFlattener {
+    
+    private OpenTypeFlattener() {
+    }
 
     public static Map<String, Object> makeMap(CompositeDataSupport data) {
         CompositeType ct = data.getCompositeType();
