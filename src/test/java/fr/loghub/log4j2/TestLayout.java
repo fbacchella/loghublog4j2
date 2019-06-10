@@ -38,7 +38,7 @@ public class TestLayout {
             port = socket.bindToRandomPort("tcp://localhost");
             System.setProperty("fr.loghub.log4j2.test.port", Integer.toString(port));
             Logger logger = LogManager.getLogger(TestLayout.class);
-            logger.debug("message 1", new RuntimeException());
+            logger.debug("message 1", new RuntimeException(new NullPointerException()));
             ThreadContext.push("ThreadContextValue");
             ThreadContext.put("key", "value");
             logger.warn(MarkerManager.getMarker("marker1"), "message 2");
