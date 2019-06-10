@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AppenderLoggingException;
 import org.apache.logging.log4j.core.config.Node;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
@@ -127,7 +128,7 @@ public class MsgPackLayout extends AbstractLayout<Message> {
             }
             return eventMap.getBytes();
         } catch (IOException e) {
-            return new byte[] {};
+            throw new AppenderLoggingException("Can't serialize an event:  " + e.getMessage(), e);
         }
     }
 

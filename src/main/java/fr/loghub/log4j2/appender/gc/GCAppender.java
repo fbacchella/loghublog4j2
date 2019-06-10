@@ -87,7 +87,8 @@ public class GCAppender extends AbstractAppender {
             try {
                 server.removeNotificationListener(t, u);
             } catch (InstanceNotFoundException | ListenerNotFoundException e) {
-                e.printStackTrace();
+                AbstractAppender.LOGGER.error("Can't remove listener a listener from {}", e.getMessage());
+                AbstractAppender.LOGGER.catching(Level.DEBUG, e);
             }
         });
     }

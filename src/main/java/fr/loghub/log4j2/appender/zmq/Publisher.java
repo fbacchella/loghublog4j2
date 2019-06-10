@@ -5,6 +5,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.message.FormattedMessage;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
@@ -22,8 +24,9 @@ class Publisher extends Thread {
     @Getter
     private final BlockingQueue<byte[]> logQueue;
     private boolean closed;
+    private ZMQManager manager;
 
-    Publisher(ZMQConfiguration config) {
+    Publisher(ZMQManager manager, ZMQConfiguration config) {
         ctx = new ZContext(1);
         ctx.setLinger(0);
         localCtx = true;
@@ -32,6 +35,7 @@ class Publisher extends Thread {
         setName("Log4J2ZMQPublishingThread");
         setDaemon(true);
         closed = false;
+        this.manager = manager;
         start();
     }
 
@@ -70,6 +74,7 @@ class Publisher extends Thread {
                                 socket = null;
                             }
                         }
+                        manager.log(Level.WARN, new FormattedMessage("Failed ZMQ connection {}: {}", config.getEndpoint(), e.getMessage()), e);
                     } 
                 }
             }
