@@ -146,6 +146,14 @@
                                         <exclude>META-INF/*.RSA</exclude>
                                         <exclude>fr/loghub/log4j2/appender/**/*.class</exclude>
                                     </excludes>
+                                    <includes>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.msgpack:msgpack-core</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
                                 </filter>
                             </filters>
                             <artifactSet>
