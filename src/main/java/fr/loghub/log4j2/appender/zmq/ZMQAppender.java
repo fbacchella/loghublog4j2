@@ -70,7 +70,7 @@ public class ZMQAppender extends AbstractAppender {
     public void append(LogEvent event) {
         byte[] formattedMessage = getLayout().toByteArray(event);
         if (! manager.getLogQueue().offer(formattedMessage)) {
-            LOGGER.error("Appender {} could not send message {} to ZMQ", getName());
+            LOGGER.error("Appender {} could not send message to ZMQ, send queue full", getName());
         }
     }
 
