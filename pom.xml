@@ -13,14 +13,12 @@
     <properties>
         <!-- The project should have a source encoding set. -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.plugin.javadoc.version>3.0.1</maven.plugin.javadoc.version>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <maven.plugin.javadoc.version>3.1.1</maven.plugin.javadoc.version>
         <!-- current year. -->
         <year>2019</year>
         <jdk.compile.home>${java.home}</jdk.compile.home>
-        <!-- libraries versions -->
-        <javadoc>2.10.3</javadoc>
     </properties>
 
     <dependencies>
@@ -33,7 +31,7 @@
         <dependency>
             <groupId>org.msgpack</groupId>
             <artifactId>msgpack-core</artifactId>
-            <version>0.8.16</version>
+            <version>0.8.17</version>
         </dependency>
         <dependency>
             <groupId>org.zeromq</groupId>
@@ -43,7 +41,7 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.11.2</version>
+            <version>2.12.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -55,7 +53,7 @@
         <dependency>
             <groupId>org.msgpack</groupId>
             <artifactId>jackson-dataformat-msgpack</artifactId>
-            <version>0.8.16</version>
+            <version>0.8.17</version>
             <scope>test</scope>
         </dependency>
 
@@ -183,10 +181,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <keywords>true</keywords>
-                    <source>${maven.compiler.source}</source>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -227,23 +221,41 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.1.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>3.1.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.2</version>
+                    <version>3.0.0-M1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-install-plugin</artifactId>
-                    <version>2.5.2</version>
+                    <version>3.0.0-M1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>${maven.plugin.javadoc.version}</version>
+                    <version>3.1.1</version>
+                    <configuration>
+                        <links>
+                            <link>http://zeromq.github.io/jzmq/javadocs/</link>
+                            <link>https://www.javadoc.io/doc/org.msgpack/msgpack-core/${msgpack}</link>
+                            <link>https://logging.apache.org/log4j/2.0/log4j-api/apidocs</link>
+                        </links>
+                        <keywords>true</keywords>
+                        <source>${maven.compiler.source}</source>
+                        <detectJavaApiLink>false</detectJavaApiLink>
+                        <detectLinks>false</detectLinks>
+                        <quiet>true</quiet>
+                        <validateLinks>true</validateLinks>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -263,7 +275,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.22.1</version>
+                    <version>3.0.0-M3</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -274,7 +286,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${javadoc}</version>
                 <reportSets>
                     <reportSet>
                         <reports>
@@ -282,16 +293,6 @@
                         </reports>
                     </reportSet>
                 </reportSets>
-                <configuration>
-                    <links>
-                        <link>http://zeromq.github.io/jzmq/javadocs/</link>
-                        <link>https://www.javadoc.io/doc/org.msgpack/msgpack-core/${msgpack}</link>
-                        <link>https://kafka.apache.org/10/javadoc/index.html?org/apache/kafka/clients/producer/KafkaProducer.html</link>
-                        <link>https://logging.apache.org/log4j/1.2/apidocs/index.html</link>
-                    </links>
-                    <keywords>true</keywords>
-                    <source>${maven.compiler.source}</source>
-                </configuration>
             </plugin>
         </plugins>
     </reporting>
