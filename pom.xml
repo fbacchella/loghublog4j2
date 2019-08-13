@@ -73,7 +73,9 @@
                         </goals>
                         <configuration>
                             <minimizeJar>true</minimizeJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
                             <finalName>zmqappender</finalName>
+                            <shadedClassifierName>zmqappender</shadedClassifierName>
                             <filters>
                                 <filter>
                                     <!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
@@ -102,7 +104,9 @@
                         </goals>
                         <configuration>
                             <minimizeJar>true</minimizeJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
                             <finalName>gcappender</finalName>
+                            <shadedClassifierName>gcappender</shadedClassifierName>
                             <filters>
                                 <filter>
                                     <!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
@@ -133,7 +137,9 @@
                         </goals>
                         <configuration>
                             <minimizeJar>true</minimizeJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
                             <finalName>msgpacklayout</finalName>
+                            <shadedClassifierName>msgpacklayout</shadedClassifierName>
                             <filters>
                                 <filter>
                                     <!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
