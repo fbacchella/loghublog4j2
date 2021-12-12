@@ -15,10 +15,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <maven.plugin.javadoc.version>3.1.1</maven.plugin.javadoc.version>
         <!-- current year. -->
-        <year>2019</year>
+        <year>2021</year>
         <jdk.compile.home>${java.home}</jdk.compile.home>
+        <!-- Indirection needed to keep optionnal jacoco settings and external argument lines-->
+        <arg.line></arg.line>
+        <argLine>${arg.line}</argLine>
     </properties>
 
     <dependencies>
@@ -306,45 +308,26 @@
     <profiles>
         <profile>
             <id>sonar</id>
-            <properties>
-                <sonar.host.url>https://sonarcloud.io</sonar.host.url>
-                <sonar.organization>${env.SONARCLOUD_ORG}</sonar.organization>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.sonarsource.scanner.maven</groupId>
+                        <artifactId>sonar-maven-plugin</artifactId>
+                    </plugin>
+                    <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>0.8.3</version>
-                        <configuration>
-                            <output>file</output>
-                            <append>true</append>
-                        </configuration>
                         <executions>
                             <execution>
-                                <id>jacoco-initialize</id>
+                                <id>prepare-agent</id>
                                 <goals>
                                     <goal>prepare-agent</goal>
                                 </goals>
                             </execution>
                             <execution>
-                                <id>jacoco-site</id>
-                                <phase>verify</phase>
+                                <id>report</id>
                                 <goals>
                                     <goal>report</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.sonarsource.scanner.maven</groupId>
-                        <artifactId>sonar-maven-plugin</artifactId>
-                        <version>3.6.0.1398</version>
-                        <executions>
-                            <execution>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sonar</goal>
                                 </goals>
                             </execution>
                         </executions>
@@ -373,27 +356,86 @@
                 </plugins>
             </reporting>
         </profile>
+        <profile>
+            <!-- With this profile, it's possible to used the latest jvm but 
+                still get jar compatible with pre-9 JVM. It's activated when jdk.compile.home 
+                is defined. Example: JAVA_HOME=$JAVA14_HOME mvn compile -Djdk.compile.home=$JAVA8_HOME 
+                ! -->
+            <id>crosscompile</id>
+            <activation>
+                <property>
+                    <name>jdk.compile.home</name>
+                </property>
+            </activation>
+            <properties>
+                <bootclasspath>${jdk.compile.home}/jre/lib/rt.jar</bootclasspath>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-Xbootclasspath:${bootclasspath}</arg>
+                                <arg>-Xlint:deprecation</arg>
+                            </compilerArgs>
+                            <!-- needed for maven-plugin-javadoc to find the 
+                                source version to use -->
+                            <source>${maven.compiler.source}</source>
+                            <target>${maven.compiler.target}</target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <!-- The default compile settings, when jdk.compile.home is not defined -->
+            <id>nocrosscompile</id>
+            <activation>
+                <property>
+                    <name>!jdk.compile.home</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-Xlint:deprecation</arg>
+                            </compilerArgs>
+                            <!-- needed for maven-plugin-javadoc to find the 
+                                source version to use -->
+                            <source>${maven.compiler.source}</source>
+                            <target>${maven.compiler.target}</target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <scm>
         <url>https://github.com/fbacchella/loghublog4j2</url>
         <connection>scm:git:git@github.com:fbacchella/loghublog4j2.git</connection>
     </scm>
+
     <issueManagement>
         <system>GitHub</system>
         <url>https://github.com/fbacchella/loghublog4j2/issues</url>
     </issueManagement>
+
     <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
         <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
+            <id>ossrh</id>
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
-        <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype Nexus Snapshots</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </snapshotRepository>
     </distributionManagement>
 
 </project>
