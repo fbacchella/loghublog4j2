@@ -26,7 +26,7 @@ import org.apache.logging.log4j.message.ObjectArrayMessage;
 @Plugin(name = "MsgPackLayout", category = Node.CATEGORY, elementType = Layout.ELEMENT_TYPE, printObject = true)
 public class MsgPackLayout extends AbstractLayout<Message> {
 
-    public static class Builder extends AbstractLayout.Builder<Builder> 
+    public static class Builder extends AbstractLayout.Builder<Builder>
     implements org.apache.logging.log4j.core.util.Builder<MsgPackLayout> {
 
         @PluginElement("AdditionalField")
