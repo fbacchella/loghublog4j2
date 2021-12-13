@@ -23,7 +23,7 @@ import org.msgpack.value.ValueFactory.MapBuilder;
 class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
 
     private static final ThreadLocal<MessageBufferPacker> packer = ThreadLocal.withInitial(MessagePack::newDefaultBufferPacker);
-    
+
     private final Set<String> keys;
 
     MsgPacker(int size) {
@@ -104,9 +104,13 @@ class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
     }
 
     public byte[] getBytes() throws IOException {
-        Value v = ValueFactory.newMap(this);
-        packer.get().packValue(v);
-        return packer.get().toByteArray();
+        try {
+            Value v = ValueFactory.newMap(this);
+            packer.get().packValue(v);
+            return packer.get().toByteArray();
+        } finally {
+            packer.get().clear();
+        }
     }
 
     @Override
