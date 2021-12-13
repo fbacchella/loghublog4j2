@@ -68,12 +68,12 @@ class Publisher extends Thread {
                         synchronized (ctx) {
                             // If it's not closed, drop the socket, to recreate a new one
                             if (!closed) {
-                                ctx.destroySocket(socket);
+                                socket.close();
                                 socket = null;
                             }
                         }
                         manager.log(Level.WARN, new FormattedMessage("Failed ZMQ connection {}: {}", config.getEndpoint(), e.getMessage()), e);
-                    } 
+                    }
                 }
             }
         } catch (InterruptedException e) {
@@ -98,7 +98,7 @@ class Publisher extends Thread {
             synchronized(this) {
                 closed = true;
             }
-            ctx.destroySocket(socket);
+            socket.close();
             socket = null;
             if(localCtx) {
                 ctx.destroy();
