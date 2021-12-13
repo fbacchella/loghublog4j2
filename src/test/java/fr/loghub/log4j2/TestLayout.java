@@ -55,20 +55,14 @@ public class TestLayout {
             ctx.close();
         }
         Assert.assertTrue(allmessages.size() >= 3);
-        Map<String, ?> msg1 = allmessages.get(0);
-        Map<String, ?> msg2 = allmessages.get(1);
-        Map<String, ?> msg3 = allmessages.get(2);
-        @SuppressWarnings("unchecked")
-        Map<String, ?> gcValues3 = (Map<String, ?>) msg3.get("values");
+        Map<String, ?> msg1 = allmessages.remove(0);
+        Map<String, ?> msg2 = allmessages.remove(0);
 
         Assert.assertEquals("fr.loghub.log4j2.TestLayout", msg1.get("loggerName"));
         Assert.assertEquals("fr.loghub.log4j2.TestLayout", msg2.get("loggerName"));
-        Assert.assertTrue(((String)msg3.get("loggerName")).startsWith("gc."));
 
         Assert.assertTrue(msg1.get("instant") instanceof MessagePackExtensionType);
         Assert.assertTrue(msg2.get("instant") instanceof MessagePackExtensionType);
-        Assert.assertTrue(msg3.get("instant") instanceof MessagePackExtensionType);
-        Assert.assertTrue(msg3.get("instant") instanceof MessagePackExtensionType);
 
         Assert.assertFalse(msg1.containsKey("marker"));
         Assert.assertTrue(msg2.containsKey("marker"));
@@ -87,19 +81,31 @@ public class TestLayout {
 
         Assert.assertEquals("DEBUG", msg1.get("level"));
         Assert.assertEquals("WARN", msg2.get("level"));
-        Assert.assertEquals("FATAL", msg3.get("level"));
 
-        Assert.assertEquals("System.gc()", gcValues3.get("gcCause"));
 
-        Assert.assertTrue(gcValues3.containsKey("gcInfo"));
 
         Assert.assertEquals("1", msg1.get("a"));
         Assert.assertEquals("1", msg2.get("a"));
-        Assert.assertEquals("1", msg3.get("a"));
 
         Assert.assertEquals(Integer.toString(port), msg1.get("b"));
         Assert.assertEquals(Integer.toString(port), msg2.get("b"));
-        Assert.assertEquals(Integer.toString(port), msg3.get("b"));
+
+        // Looking for the "System.gc()" message, but other gc may have been sent
+        boolean systemgcFound = false;
+        for (Map<String, ?> trygcmsg: allmessages) {
+            Assert.assertTrue(trygcmsg.containsKey("values"));
+            @SuppressWarnings("unchecked")
+            Map<String, ?> gcValues = (Map<String, ?>) trygcmsg.get("values");
+            Assert.assertTrue(((String)trygcmsg.get("loggerName")).startsWith("gc."));
+            Assert.assertTrue(trygcmsg.get("instant") instanceof MessagePackExtensionType);
+            Assert.assertEquals("FATAL", trygcmsg.get("level"));
+            if ("System.gc()".equals(gcValues.get("gcCause"))) {
+                systemgcFound = true;
+            }
+            Assert.assertTrue(gcValues.containsKey("gcInfo"));
+            Assert.assertEquals("1", trygcmsg.get("a"));
+        }
+        Assert.assertTrue(systemgcFound);
     }
 
 }
