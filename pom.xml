@@ -4,7 +4,7 @@
 
     <groupId>fr.loghub</groupId>
     <artifactId>loghublog4j2</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>loghublog4j2</name>
@@ -25,12 +25,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.msgpack</groupId>
             <artifactId>msgpack-core</artifactId>
             <version>0.9.0</version>
@@ -43,7 +37,13 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.16.0</version>
+            <version>2.17.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -58,6 +58,12 @@
             <version>0.9.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
@@ -68,7 +74,7 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>zmq</id>
+                        <id>zmq1</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
@@ -76,8 +82,7 @@
                         <configuration>
                             <minimizeJar>true</minimizeJar>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <finalName>zmqappender</finalName>
-                            <shadedClassifierName>zmqappender</shadedClassifierName>
+                            <shadedClassifierName>zmqappender1</shadedClassifierName>
                             <filters>
                                 <filter>
                                     <!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
@@ -86,14 +91,49 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
-                                        <exclude>fr/loghub/log4j2/appender/gc/*.class</exclude>
-                                        <exclude>fr/loghub/log4j2/layout/msgpack/*.class</exclude>
+                                        <exclude>META-INF/org/apache/logging/log4j/</exclude>
+                                        <exclude>fr/loghub/log4j2/</exclude>
+                                        <exclude>fr/loghub/*/msgpack/</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
                             <artifactSet>
                                 <excludes>
                                     <exclude>org.msgpack:*</exclude>
+                                    <exclude>org.apache.logging.log4j:*</exclude>
+                                </excludes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>zmq2</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>zmqappender2</shadedClassifierName>
+                            <filters>
+                                <filter>
+                                    <!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>fr/loghub/log4j1/</exclude>
+                                        <exclude>fr/loghub/log4j2/appender/gc/</exclude>
+                                        <exclude>fr/loghub/log4j2/layout/msgpack/</exclude>
+                                        <exclude>fr/loghub/logservices/msgpack/</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.msgpack:*</exclude>
+                                    <exclude>log4j:*</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>
@@ -107,7 +147,6 @@
                         <configuration>
                             <minimizeJar>true</minimizeJar>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <finalName>gcappender</finalName>
                             <shadedClassifierName>gcappender</shadedClassifierName>
                             <filters>
                                 <filter>
@@ -117,8 +156,10 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
-                                        <exclude>fr/loghub/log4j2/appender/zmq/*.class</exclude>
-                                        <exclude>fr/loghub/log4j2/layout/msgpack/*.class</exclude>
+                                        <exclude>fr/loghub/log4j1/</exclude>
+                                        <exclude>fr/loghub/log4j2/appender/zmq/</exclude>
+                                        <exclude>fr/loghub/log4j2/layout/</exclude>
+                                        <exclude>fr/loghub/logservices/</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
@@ -127,12 +168,13 @@
                                     <exclude>org.msgpack:*</exclude>
                                     <exclude>org.zeromq:*</exclude>
                                     <exclude>eu.neilalexander:*</exclude>
+                                    <exclude>log4j:*</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>msgpack</id>
+                        <id>msgpack1</id>
                         <phase>package</phase>
                         <goals>
                             <goal>shade</goal>
@@ -140,8 +182,7 @@
                         <configuration>
                             <minimizeJar>true</minimizeJar>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <finalName>msgpacklayout</finalName>
-                            <shadedClassifierName>msgpacklayout</shadedClassifierName>
+                            <shadedClassifierName>msgpacklayout1</shadedClassifierName>
                             <filters>
                                 <filter>
                                     <!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
@@ -150,7 +191,9 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
-                                        <exclude>fr/loghub/log4j2/appender/**/*.class</exclude>
+                                        <exclude>fr/loghub/log4j1/zmq</exclude>
+                                        <exclude>fr/loghub/log4j2/</exclude>
+                                        <exclude>fr/loghub/logservices/zmq/</exclude>
                                     </excludes>
                                     <includes>
                                     </includes>
@@ -166,6 +209,48 @@
                                 <excludes>
                                     <exclude>org.zeromq:*</exclude>
                                     <exclude>eu.neilalexander:*</exclude>
+                                    <exclude>org.apache.logging.log4j:*</exclude>
+                                </excludes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>msgpack2</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>msgpacklayout2</shadedClassifierName>
+                            <filters>
+                                <filter>
+                                    <!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>fr/loghub/log4j1/</exclude>
+                                        <exclude>fr/loghub/log4j2/appender/</exclude>
+                                        <exclude>fr/loghub/logservices/zmq/</exclude>
+                                    </excludes>
+                                    <includes>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.msgpack:msgpack-core</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                            </filters>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.zeromq:*</exclude>
+                                    <exclude>eu.neilalexander:*</exclude>
+                                    <exclude>log4j:*</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>

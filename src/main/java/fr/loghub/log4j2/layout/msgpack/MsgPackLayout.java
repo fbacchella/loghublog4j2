@@ -1,6 +1,10 @@
 package fr.loghub.log4j2.layout.msgpack;
 
+import fr.loghub.logservices.FieldsName;
+import fr.loghub.logservices.msgpack.MsgPacker;
+
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -56,18 +60,6 @@ public class MsgPackLayout extends AbstractLayout<Message> {
         locationInfo = builder.locationInfo;
     }
 
-    private Map<String, Object> resolveThrowable(Throwable t) {
-        Map<String, Object> exception = new HashMap<>(4);
-        Optional.ofNullable(t.getMessage()).ifPresent(m -> exception.put("message", m));
-        exception.put("name", t.getClass().getName());
-        List<String> stack = Arrays.stream(t.getStackTrace()).map(StackTraceElement::toString).map(i -> i.replace("\t", "")).collect(Collectors.toList());
-        exception.put("extendedStackTrace", stack);
-        Optional.ofNullable(t.getCause())
-        .map(this::resolveThrowable)
-        .ifPresent(i -> exception.put("cause", i));
-        return exception;
-    }
-
     private Map<String, Object> resolveMark(Marker m) {
         Map<String, Object> markerMap = new HashMap<>(2);
         markerMap.put("name", m.getName());
@@ -81,10 +73,10 @@ public class MsgPackLayout extends AbstractLayout<Message> {
     @Override
     public byte[] toByteArray(LogEvent event) {
         try (MsgPacker eventMap = new MsgPacker(11)){
-            eventMap.put("instant", event.getInstant());
-            eventMap.put("thread", event.getThreadName());
-            eventMap.put("level", event.getLevel().name());
-            eventMap.put("loggerName", event.getLoggerName());
+            eventMap.put(FieldsName.TIMESTAMP, Instant.ofEpochSecond(event.getInstant().getEpochSecond(), event.getInstant().getNanoOfSecond()));
+            eventMap.put(FieldsName.THREADNAME, event.getThreadName());
+            eventMap.put(FieldsName.LEVEL, event.getLevel().name());
+            eventMap.put(FieldsName.LOGGER, event.getLoggerName());
             Optional.ofNullable(event.getMarker()).ifPresent(m -> eventMap.put("marker", resolveMark(m)));
             Message msg = event.getMessage();
             if (msg instanceof MapMessage) {
@@ -95,23 +87,23 @@ public class MsgPackLayout extends AbstractLayout<Message> {
                 Object[] params = ((ObjectArrayMessage)msg).getParameters();
                 eventMap.put("content", Arrays.asList(params));
             } else {
-                eventMap.put("message", event.getMessage().getFormattedMessage());
+                eventMap.put(FieldsName.MESSAGE, event.getMessage().getFormattedMessage());
             }
-            Optional.ofNullable(event.getThrown()).ifPresent(t -> eventMap.put("thrown", resolveThrowable(t)));
+            Optional.ofNullable(event.getThrown()).ifPresent(t -> eventMap.put(FieldsName.EXCEPTION, t));
             // Ignoring end of batch eventMap.put("endOfBatch", event.isEndOfBatch());
             // Ignoring fqcn of logger eventMap.put("loggerFqcn", event.getLoggerFqcn());
-            Optional.of(event.getContextData()).filter(cd -> cd.size() > 0).ifPresent(cd -> eventMap.put("contextData", cd));
+            Optional.of(event.getContextData()).filter(cd -> cd.size() > 0).ifPresent(cd -> eventMap.put("contextData", cd.toMap()));
             Optional.of(event.getContextStack()).filter(cs -> cs.getDepth() > 0).ifPresent(cs -> eventMap.put("contextStack", cs.asList()));
             eventMap.put("threadId", event.getThreadId());
             eventMap.put("threadPriority", event.getThreadPriority());
             if (locationInfo) {
                 Optional.ofNullable(event.getSource()).ifPresent(ste -> {
                     Map<String, Object> locationinfo = new HashMap<>(4);
-                    locationinfo.put("class", ste.getClassName());
-                    locationinfo.put("file", ste.getFileName());
-                    locationinfo.put("method", ste.getMethodName());
-                    locationinfo.put("line", ste.getLineNumber());
-                    eventMap.put("source", locationinfo);
+                    locationinfo.put(FieldsName.LOCATIONINFO_CLASS, ste.getClassName());
+                    locationinfo.put(FieldsName.LOCATIONINFO_FILE, ste.getFileName());
+                    locationinfo.put(FieldsName.LOCATIONINFO_METHOD, ste.getMethodName());
+                    locationinfo.put(FieldsName.LOCATIONINFO_LINE, ste.getLineNumber());
+                    eventMap.put(FieldsName.LOCATIONINFO, locationinfo);
                 });
             }
             if (additionalFields.length > 0) {

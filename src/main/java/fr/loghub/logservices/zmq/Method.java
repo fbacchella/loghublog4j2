@@ -1,8 +1,8 @@
-package fr.loghub.log4j2.appender.zmq;
+package fr.loghub.logservices.zmq;
 
 import org.zeromq.ZMQ;
 
-enum Method {
+public enum Method {
     CONNECT {
         @Override
         public void act(ZMQ.Socket socket, String address) { socket.connect(address); }

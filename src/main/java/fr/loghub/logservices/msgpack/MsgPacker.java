@@ -1,7 +1,9 @@
-package fr.loghub.log4j2.layout.msgpack;
+package fr.loghub.logservices.msgpack;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,21 +14,19 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.logging.log4j.core.time.Instant;
-import org.apache.logging.log4j.util.ReadOnlyStringMap;
 import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
 import org.msgpack.value.ValueFactory.MapBuilder;
 
-class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
+public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
 
     private static final ThreadLocal<MessageBufferPacker> packer = ThreadLocal.withInitial(MessagePack::newDefaultBufferPacker);
 
     private final Set<String> keys;
 
-    MsgPacker(int size) {
+    public MsgPacker(int size) {
         super(size);
         keys = new HashSet<>(size);
     }
@@ -50,15 +50,22 @@ class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
     public void put(String k, Map<String, ? extends Object> v) {
         store(k, v, this::map);
     }
-    public void put(String k, ReadOnlyStringMap v) {
+    public void put(String k, Throwable v) {
         store(k, v, this::map);
     }
+    //public void put(String k, ReadOnlyStringMap v) {
+    //    store(k, v, this::map);
+    //}
     private Value map(Object m) {
         if (m == null) {
             return ValueFactory.newNil();
         } else if (m instanceof List) {
             List<Value> elements = ((List<?>)m).stream().map(this::map).collect(Collectors.toList());
             return ValueFactory.newArray(elements);
+        } else if (m instanceof Throwable) {
+            MapBuilder builder = ValueFactory.newMapBuilder();
+            resolveThrowable((Throwable) m).forEach((k,v) -> builder.put(map(k), map(v)));
+            return builder.build();
         } else if (m instanceof Number) {
             return ValueFactory.newInteger(((Number)m).longValue());
         } else if (m instanceof Map) {
@@ -68,10 +75,10 @@ class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
         } else if (m instanceof Instant) {
             byte[] bytes = getInstantBytes((Instant) m);
             return ValueFactory.newExtension((byte)-1, bytes);
-        } else if (m instanceof ReadOnlyStringMap) {
-            MapBuilder builder = ValueFactory.newMapBuilder();
-            ((ReadOnlyStringMap)m).forEach((k,v) -> builder.put(map(k), map(v)));
-            return builder.build();
+        //} else if (m instanceof ReadOnlyStringMap) {
+        //    MapBuilder builder = ValueFactory.newMapBuilder();
+        //    ((ReadOnlyStringMap)m).forEach((k,v) -> builder.put(map(k), map(v)));
+        //    return builder.build();
         } else {
             return ValueFactory.newString(m.toString());
         }
@@ -85,7 +92,7 @@ class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
     private byte[] getInstantBytes(Instant timestamp) {
         ByteBuffer longBuffer;
         long seconds = timestamp.getEpochSecond();
-        int nanoseconds = timestamp.getNanoOfSecond();
+        int nanoseconds = timestamp.getNano();
         long result = ((long)nanoseconds << 34) | seconds;
         if ((result >> 34) == 0) {
             if ((result & 0xffffffff00000000L) == 0 ) {
@@ -101,6 +108,18 @@ class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
             longBuffer.putLong(seconds);
         }
         return longBuffer.array();
+    }
+
+    private Map<String, Object> resolveThrowable(Throwable t) {
+        Map<String, Object> exception = new HashMap<>(4);
+        Optional.ofNullable(t.getMessage()).ifPresent(m -> exception.put("message", m));
+        exception.put("name", t.getClass().getName());
+        List<String> stack = Arrays.stream(t.getStackTrace()).map(StackTraceElement::toString).map(i -> i.replace("\t", "")).collect(Collectors.toList());
+        exception.put("extendedStackTrace", stack);
+        Optional.ofNullable(t.getCause())
+                .map(this::resolveThrowable)
+                .ifPresent(i -> exception.put("cause", i));
+        return exception;
     }
 
     public byte[] getBytes() throws IOException {
