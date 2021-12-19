@@ -73,37 +73,27 @@ public class TestLayout {
         }
         Assert.assertTrue(allmessages.size() == 2);
         Map<String, ?> msg1 = allmessages.remove(0);
-        Map<String, ?> msg2 = allmessages.remove(0);
-
         Assert.assertEquals("fr.loghub.log4j2.TestLayout", msg1.remove(FieldsName.LOGGER));
-        Assert.assertEquals("fr.loghub.log4j2.TestLayout", msg2.remove(FieldsName.LOGGER));
-
         Assert.assertTrue(msg1.get(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
-        Assert.assertTrue(msg2.get(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
-
         Assert.assertEquals("DEBUG", msg1.get(FieldsName.LEVEL));
-        Assert.assertEquals("WARN", msg2.get(FieldsName.LEVEL));
-
-        Assert.assertFalse(msg1.containsKey("marker"));
-        Assert.assertTrue(msg2.containsKey("marker"));
-
+        Assert.assertFalse(msg1.containsKey(FieldsName.MARKERS));
         Assert.assertTrue(msg1.containsKey(FieldsName.EXCEPTION));
-        Assert.assertFalse(msg2.containsKey(FieldsName.EXCEPTION));
-
-        Assert.assertFalse(msg1.containsKey("contextStack"));
-        Assert.assertTrue(msg2.containsKey("contextStack"));
-
-        Assert.assertFalse(msg1.containsKey("contextData"));
-        Assert.assertTrue(msg2.containsKey("contextData"));
-
+        Assert.assertEquals(2, ((Map)msg1.get(FieldsName.CONTEXTPROPERTIES)).size());
         Assert.assertEquals("message 1", msg1.get("message"));
+        Assert.assertEquals("1", ((Map)msg1.get(FieldsName.CONTEXTPROPERTIES)).get("a"));
+        Assert.assertEquals(Integer.toString(port), ((Map)msg1.get(FieldsName.CONTEXTPROPERTIES)).get("b"));
+
+        Map<String, ?> msg2 = allmessages.remove(0);
+        Assert.assertEquals("fr.loghub.log4j2.TestLayout", msg2.remove(FieldsName.LOGGER));
+        Assert.assertTrue(msg2.get(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
+        Assert.assertEquals("WARN", msg2.get(FieldsName.LEVEL));
+        Assert.assertTrue(msg2.containsKey(FieldsName.MARKERS));
+        Assert.assertFalse(msg2.containsKey(FieldsName.EXCEPTION));
+        Assert.assertEquals(3, ((Map)msg2.get(FieldsName.CONTEXTPROPERTIES)).size());
         Assert.assertEquals("message 2", msg2.get("message"));
-
-        Assert.assertEquals("1", msg1.get("a"));
-        Assert.assertEquals("1", msg2.get("a"));
-
-        Assert.assertEquals(Integer.toString(port), msg1.get("b"));
-        Assert.assertEquals(Integer.toString(port), msg2.get("b"));
+        Assert.assertEquals("1", ((Map)msg2.get(FieldsName.CONTEXTPROPERTIES)).get("a"));
+        Assert.assertEquals(Integer.toString(port), ((Map)msg2.get(FieldsName.CONTEXTPROPERTIES)).get("b"));
+        Assert.assertEquals("value", ((Map)msg2.get(FieldsName.CONTEXTPROPERTIES)).get("key"));
 
         // Looking for the "System.gc()" message, but other gc may have been sent
         boolean systemgcFound = false;
@@ -118,7 +108,7 @@ public class TestLayout {
                 systemgcFound = true;
             }
             Assert.assertTrue(gcValues.containsKey("gcInfo"));
-            Assert.assertEquals("1", trygcmsg.get("a"));
+            Assert.assertEquals("1", ((Map)msg1.get(FieldsName.CONTEXTPROPERTIES)).get("a"));
         }
         Assert.assertTrue(systemgcFound);
     }

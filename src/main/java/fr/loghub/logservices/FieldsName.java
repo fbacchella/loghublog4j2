@@ -12,4 +12,8 @@ public interface FieldsName {
     public static final String LOCATIONINFO_LINE = "line";
     public static final String LOCATIONINFO = "location_info";
     public static final String EXCEPTION = "thrown";
+    public static final String CONTEXTSTACK = "context_stack";
+    public static final String CONTEXTPROPERTIES = "context_properties";
+    public static final String CUSTOMPROPERTIES = "custom_properties";
+    public static final String MARKERS = "markers";
 }

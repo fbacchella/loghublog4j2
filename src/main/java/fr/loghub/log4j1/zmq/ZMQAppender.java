@@ -54,17 +54,6 @@ public class ZMQAppender extends SerializerAppender implements Logger {
         publisher.close();
     }
 
-    @Override
-    public boolean requiresLayout() {
-        return true;
-    }
-
-    @Override
-    public void setLayout(Layout layout) {
-        System.out.println(layout.getClass());
-        super.setLayout(layout);
-    }
-
     /**
      * Define the ØMQ socket type. Current allowed value are PUB or PUSH.
      *

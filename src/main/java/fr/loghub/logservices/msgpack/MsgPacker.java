@@ -53,9 +53,6 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
     public void put(String k, Throwable v) {
         store(k, v, this::map);
     }
-    //public void put(String k, ReadOnlyStringMap v) {
-    //    store(k, v, this::map);
-    //}
     private Value map(Object m) {
         if (m == null) {
             return ValueFactory.newNil();

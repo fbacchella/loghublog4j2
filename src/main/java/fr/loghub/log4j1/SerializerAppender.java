@@ -26,11 +26,8 @@ public abstract class SerializerAppender extends AppenderSkeleton {
     @Getter @Setter
     private boolean locationInfo = false;
 
-    private final Map<String, String> mapping = new HashMap();
-
     @Override
     public final void activateOptions() {
-
         try {
             @SuppressWarnings("unchecked")
             Class<? extends Serializer> c = (Class<? extends Serializer>) getClass().getClassLoader().loadClass(serializerName);
@@ -83,6 +80,11 @@ public abstract class SerializerAppender extends AppenderSkeleton {
 
     protected abstract void send(byte[] content);
 
+    @Override
+    public boolean requiresLayout() {
+        return false;
+    }
+
     public String getSerializer() {
         return serializerName;
     }
@@ -93,13 +95,6 @@ public abstract class SerializerAppender extends AppenderSkeleton {
      */
     public void setSerializer(String serializer) {
         this.serializerName = serializer;
-    }
-
-    public void setMapping(String o) {
-        String[] part = o.split("=");
-        if (part.length == 2) {
-            mapping.put(part[0], part[1]);
-        }
     }
 
 }

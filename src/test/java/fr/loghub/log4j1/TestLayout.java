@@ -1,4 +1,4 @@
-package fr.loghub.log4j;
+package fr.loghub.log4j1;
 
 import fr.loghub.logservices.FieldsName;
 import zmq.ZMQ;
@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.MDC;
 import org.apache.log4j.NDC;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -49,11 +51,14 @@ public class TestLayout {
         JsonFactory factory = new MessagePackFactory();
         ObjectMapper msgpack = new ObjectMapper(factory);
 
-        org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(TestLayout.class);
+        Logger logger = Logger.getLogger(TestLayout.class);
 
         NDC.push("1");
         NDC.push("2");
         logger.debug("message 1", new RuntimeException(new NullPointerException()));
+        NDC.remove();
+        MDC.put("key", "value");
+        logger.warn("message 2");
         Thread.sleep(100);
 
         while ((socket.getEvents() & ZMQ.ZMQ_POLLIN) != 0) {
@@ -61,19 +66,28 @@ public class TestLayout {
             Map<String, ?> msg = msgpack.readValue(socket.recv(), Map.class);
             allmessages.add(msg);
         }
-        Assert.assertEquals(1, allmessages.size());
+        Assert.assertEquals(2, allmessages.size());
         Map<String, ?> msg1 = allmessages.remove(0);
         System.out.println(msg1);
-
-        Assert.assertEquals("fr.loghub.log4j.TestLayout", msg1.get(FieldsName.LOGGER));
+        Assert.assertEquals("fr.loghub.log4j1.TestLayout", msg1.get(FieldsName.LOGGER));
         Assert.assertTrue(msg1.get(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
-        Assert.assertFalse(msg1.containsKey("marker"));
-        Assert.assertTrue(msg1.containsKey("stack_trace"));
-        Assert.assertFalse(msg1.containsKey("contextStack"));
-        Assert.assertFalse(msg1.containsKey("contextData"));
+        Assert.assertTrue(msg1.containsKey(FieldsName.EXCEPTION));
+        Assert.assertEquals("1 2", msg1.get(FieldsName.CONTEXTSTACK));
+        Assert.assertTrue(msg1.containsKey(FieldsName.CONTEXTPROPERTIES));
         Assert.assertEquals("main", msg1.get(FieldsName.THREADNAME));
         Assert.assertEquals("message 1", msg1.get(FieldsName.MESSAGE));
         Assert.assertEquals("DEBUG", msg1.get(FieldsName.LEVEL));
+
+        Map<String, ?> msg2 = allmessages.remove(0);
+        Assert.assertEquals("fr.loghub.log4j1.TestLayout", msg2.get(FieldsName.LOGGER));
+        Assert.assertTrue(msg2.get(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
+        Assert.assertFalse(msg2.containsKey(FieldsName.EXCEPTION));
+        Assert.assertFalse(msg2.containsKey(FieldsName.CONTEXTSTACK));
+        Assert.assertTrue(msg2.containsKey(FieldsName.CONTEXTPROPERTIES));
+        Assert.assertEquals("main", msg2.get(FieldsName.THREADNAME));
+        Assert.assertEquals("message 2", msg2.get(FieldsName.MESSAGE));
+        Assert.assertEquals("WARN", msg2.get(FieldsName.LEVEL));
+
     }
 
 }

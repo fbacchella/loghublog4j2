@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.log4j.spi.LoggingEvent;
 import org.msgpack.core.MessageBufferPacker;
@@ -36,15 +37,9 @@ public class MsgPackSerializer implements Serializer {
                 locationinfo.put(FieldsName.LOCATIONINFO_LINE, event.getLocationInformation().getLineNumber());
                 eventMap.put(FieldsName.LOCATIONINFO, locationinfo);
             }
-            eventMap.put("NDC", event.getNDC());
-            if (event.getThrowableInformation() != null) {
-                eventMap.put(FieldsName.EXCEPTION, event.getThrowableInformation().getThrowable());
-            }
-            @SuppressWarnings("unchecked")
-            Map<String, ?> m = event.getProperties();
-            if (m.size() > 0) {
-                eventMap.put("properties", m);
-            }
+            Optional.ofNullable(event.getProperties()).filter(m -> ! m.isEmpty()).ifPresent(s -> eventMap.put(FieldsName.CONTEXTPROPERTIES, s));
+            Optional.ofNullable(event.getNDC()).filter(s -> ! s.isEmpty()).ifPresent(s -> eventMap.put(FieldsName.CONTEXTSTACK, s));
+            Optional.ofNullable(event.getThrowableInformation()).ifPresent(ti -> eventMap.put(FieldsName.EXCEPTION, ti.getThrowable()));
             eventMap.put(FieldsName.MESSAGE, event.getRenderedMessage());
 
             Value v = ValueFactory.newMap(eventMap);
