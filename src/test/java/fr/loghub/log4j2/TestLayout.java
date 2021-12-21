@@ -74,26 +74,46 @@ public class TestLayout {
         Assert.assertTrue(allmessages.size() == 2);
         Map<String, ?> msg1 = allmessages.remove(0);
         Assert.assertEquals("fr.loghub.log4j2.TestLayout", msg1.remove(FieldsName.LOGGER));
-        Assert.assertTrue(msg1.get(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
-        Assert.assertEquals("DEBUG", msg1.get(FieldsName.LEVEL));
-        Assert.assertFalse(msg1.containsKey(FieldsName.MARKERS));
-        Assert.assertTrue(msg1.containsKey(FieldsName.EXCEPTION));
-        Assert.assertEquals(2, ((Map)msg1.get(FieldsName.CONTEXTPROPERTIES)).size());
-        Assert.assertEquals("message 1", msg1.get("message"));
-        Assert.assertEquals("1", ((Map)msg1.get(FieldsName.CONTEXTPROPERTIES)).get("a"));
-        Assert.assertEquals(Integer.toString(port), ((Map)msg1.get(FieldsName.CONTEXTPROPERTIES)).get("b"));
+        Assert.assertEquals("org.apache.logging.log4j.spi.AbstractLogger", msg1.remove(FieldsName.LOGGER_FQCN));
+        Assert.assertEquals(Thread.currentThread().getName(), msg1.remove(FieldsName.THREADNAME));
+        Assert.assertEquals(Thread.currentThread().getPriority(), msg1.remove(FieldsName.THREADPRIORITY));
+        Assert.assertEquals((int)Thread.currentThread().getId(), msg1.remove(FieldsName.THREADID));
+        Assert.assertEquals("DEBUG", msg1.remove(FieldsName.LEVEL));
+        Assert.assertEquals(false, msg1.remove(FieldsName.ENDOFBATCH));
+        Assert.assertTrue(msg1.remove(FieldsName.INSTANT) instanceof MessagePackExtensionType);
+        Assert.assertNull(msg1.remove(FieldsName.MARKERS));
+        Assert.assertNotNull(msg1.remove(FieldsName.EXCEPTION));
+
+        Assert.assertEquals("message 1", msg1.remove("message"));
+        Map<?, ?> props1 = (Map)msg1.remove(FieldsName.CONTEXTPROPERTIES);
+        Assert.assertEquals(2, props1.size());
+        Assert.assertEquals("1", props1.get("a"));
+        Assert.assertEquals(Integer.toString(port), props1.get("b"));
+        Assert.assertEquals(msg1.toString(), 0, msg1.size());
 
         Map<String, ?> msg2 = allmessages.remove(0);
         Assert.assertEquals("fr.loghub.log4j2.TestLayout", msg2.remove(FieldsName.LOGGER));
-        Assert.assertTrue(msg2.get(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
-        Assert.assertEquals("WARN", msg2.get(FieldsName.LEVEL));
-        Assert.assertTrue(msg2.containsKey(FieldsName.MARKERS));
-        Assert.assertFalse(msg2.containsKey(FieldsName.EXCEPTION));
-        Assert.assertEquals(3, ((Map)msg2.get(FieldsName.CONTEXTPROPERTIES)).size());
-        Assert.assertEquals("message 2", msg2.get("message"));
-        Assert.assertEquals("1", ((Map)msg2.get(FieldsName.CONTEXTPROPERTIES)).get("a"));
-        Assert.assertEquals(Integer.toString(port), ((Map)msg2.get(FieldsName.CONTEXTPROPERTIES)).get("b"));
-        Assert.assertEquals("value", ((Map)msg2.get(FieldsName.CONTEXTPROPERTIES)).get("key"));
+        Assert.assertEquals("org.apache.logging.log4j.spi.AbstractLogger", msg2.remove(FieldsName.LOGGER_FQCN));
+        Assert.assertEquals(Thread.currentThread().getName(), msg2.remove(FieldsName.THREADNAME));
+        Assert.assertEquals(Thread.currentThread().getPriority(), msg2.remove(FieldsName.THREADPRIORITY));
+        Assert.assertEquals((int)Thread.currentThread().getId(), msg2.remove(FieldsName.THREADID));
+        Assert.assertTrue(msg2.remove(FieldsName.INSTANT) instanceof MessagePackExtensionType);
+        Assert.assertEquals("WARN", msg2.remove(FieldsName.LEVEL));
+        Assert.assertEquals(false, msg2.remove(FieldsName.ENDOFBATCH));
+        Map markers2 = (Map) msg2.remove(FieldsName.MARKERS);
+        Assert.assertNotNull(markers2);
+        Assert.assertNull(msg2.remove(FieldsName.EXCEPTION));
+        Assert.assertEquals("message 2", msg2.remove("message"));
+        List stack2 = (List) msg2.remove(FieldsName.CONTEXTSTACK);
+        Assert.assertEquals(1, stack2.size());
+        Assert.assertEquals("ThreadContextValue", stack2.get(0));
+        Assert.assertNotNull(stack2);
+        Map<?, ?> props2 = (Map)msg2.remove(FieldsName.CONTEXTPROPERTIES);
+        Assert.assertEquals(3, props2.size());
+        Assert.assertEquals("1", props2.get("a"));
+        Assert.assertEquals(Integer.toString(port), props2.get("b"));
+        Assert.assertEquals("value", props2.get("key"));
+        Assert.assertEquals(msg2.toString(), 0, msg2.size());
 
         // Looking for the "System.gc()" message, but other gc may have been sent
         boolean systemgcFound = false;
@@ -102,13 +122,13 @@ public class TestLayout {
             @SuppressWarnings("unchecked")
             Map<String, ?> gcValues = (Map<String, ?>) trygcmsg.get("values");
             Assert.assertTrue(((String)trygcmsg.get(FieldsName.LOGGER)).startsWith("gc."));
-            Assert.assertTrue(trygcmsg.get(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
+            Assert.assertTrue(trygcmsg.get(FieldsName.INSTANT) instanceof MessagePackExtensionType);
             Assert.assertEquals("FATAL", trygcmsg.get(FieldsName.LEVEL));
             if ("System.gc()".equals(gcValues.get("gcCause"))) {
                 systemgcFound = true;
             }
             Assert.assertTrue(gcValues.containsKey("gcInfo"));
-            Assert.assertEquals("1", ((Map)msg1.get(FieldsName.CONTEXTPROPERTIES)).get("a"));
+            Assert.assertEquals("1", props1.get("a"));
         }
         Assert.assertTrue(systemgcFound);
     }

@@ -1,5 +1,7 @@
 package fr.loghub.logservices.msgpack;
 
+import fr.loghub.logservices.FieldsName;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.Instant;
@@ -53,6 +55,15 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
     public void put(String k, Throwable v) {
         store(k, v, this::map);
     }
+    public void put(String k, boolean v) {
+        store(k, v, m -> ValueFactory.newBoolean(v));
+    }
+    public void put(String k, int v) {
+        store(k, v, m -> ValueFactory.newInteger(v));
+    }
+    public void put(String k, long v) {
+        store(k, v, m -> ValueFactory.newInteger(v));
+    }
     private Value map(Object m) {
         if (m == null) {
             return ValueFactory.newNil();
@@ -65,6 +76,8 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
             return builder.build();
         } else if (m instanceof Number) {
             return ValueFactory.newInteger(((Number)m).longValue());
+        } else if (java.lang.Boolean.TYPE.isInstance(m)) {
+            return ValueFactory.newBoolean((boolean) m);
         } else if (m instanceof Map) {
             MapBuilder builder = ValueFactory.newMapBuilder();
             ((Map<?, ?>)m).forEach((k,v) -> builder.put(map(k), map(v)));
@@ -72,10 +85,6 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
         } else if (m instanceof Instant) {
             byte[] bytes = getInstantBytes((Instant) m);
             return ValueFactory.newExtension((byte)-1, bytes);
-        //} else if (m instanceof ReadOnlyStringMap) {
-        //    MapBuilder builder = ValueFactory.newMapBuilder();
-        //    ((ReadOnlyStringMap)m).forEach((k,v) -> builder.put(map(k), map(v)));
-        //    return builder.build();
         } else {
             return ValueFactory.newString(m.toString());
         }
@@ -109,10 +118,10 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
 
     private Map<String, Object> resolveThrowable(Throwable t) {
         Map<String, Object> exception = new HashMap<>(4);
-        Optional.ofNullable(t.getMessage()).ifPresent(m -> exception.put("message", m));
-        exception.put("name", t.getClass().getName());
+        Optional.ofNullable(t.getMessage()).ifPresent(m -> exception.put(FieldsName.THROWN_MESSAGE, m));
+        exception.put(FieldsName.THROWN_NAME, t.getClass().getName());
         List<String> stack = Arrays.stream(t.getStackTrace()).map(StackTraceElement::toString).map(i -> i.replace("\t", "")).collect(Collectors.toList());
-        exception.put("extendedStackTrace", stack);
+        exception.put(FieldsName.THROWN_EXTENDEDSTACKTRACE, stack);
         Optional.ofNullable(t.getCause())
                 .map(this::resolveThrowable)
                 .ifPresent(i -> exception.put("cause", i));

@@ -70,7 +70,7 @@ public class TestLayout {
         Map<String, ?> msg1 = allmessages.remove(0);
         System.out.println(msg1);
         Assert.assertEquals("fr.loghub.log4j1.TestLayout", msg1.get(FieldsName.LOGGER));
-        Assert.assertTrue(msg1.get(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
+        Assert.assertTrue(msg1.get(FieldsName.INSTANT) instanceof MessagePackExtensionType);
         Assert.assertTrue(msg1.containsKey(FieldsName.EXCEPTION));
         Assert.assertEquals("1 2", msg1.get(FieldsName.CONTEXTSTACK));
         Assert.assertTrue(msg1.containsKey(FieldsName.CONTEXTPROPERTIES));
@@ -80,7 +80,7 @@ public class TestLayout {
 
         Map<String, ?> msg2 = allmessages.remove(0);
         Assert.assertEquals("fr.loghub.log4j1.TestLayout", msg2.get(FieldsName.LOGGER));
-        Assert.assertTrue(msg2.get(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
+        Assert.assertTrue(msg2.get(FieldsName.INSTANT) instanceof MessagePackExtensionType);
         Assert.assertFalse(msg2.containsKey(FieldsName.EXCEPTION));
         Assert.assertFalse(msg2.containsKey(FieldsName.CONTEXTSTACK));
         Assert.assertTrue(msg2.containsKey(FieldsName.CONTEXTPROPERTIES));

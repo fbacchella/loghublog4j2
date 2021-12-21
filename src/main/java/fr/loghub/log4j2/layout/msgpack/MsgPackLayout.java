@@ -75,10 +75,14 @@ public class MsgPackLayout extends AbstractLayout<Message> {
     @Override
     public byte[] toByteArray(LogEvent event) {
         try (MsgPacker eventMap = new MsgPacker(11)){
-            eventMap.put(FieldsName.TIMESTAMP, Instant.ofEpochSecond(event.getInstant().getEpochSecond(), event.getInstant().getNanoOfSecond()));
+            eventMap.put(FieldsName.INSTANT, Instant.ofEpochSecond(event.getInstant().getEpochSecond(), event.getInstant().getNanoOfSecond()));
             eventMap.put(FieldsName.THREADNAME, event.getThreadName());
+            eventMap.put(FieldsName.THREADPRIORITY, event.getThreadPriority());
+            eventMap.put(FieldsName.THREADID, event.getThreadId());
             eventMap.put(FieldsName.LEVEL, event.getLevel().name());
             eventMap.put(FieldsName.LOGGER, event.getLoggerName());
+            eventMap.put(FieldsName.LOGGER_FQCN, event.getLoggerFqcn());
+            eventMap.put(FieldsName.ENDOFBATCH, event.isEndOfBatch());
             Optional.ofNullable(event.getMarker())
                     .map(this::resolveMark)
                     .ifPresent(m -> eventMap.put(FieldsName.MARKERS, m));
@@ -101,9 +105,7 @@ public class MsgPackLayout extends AbstractLayout<Message> {
             Optional.of(event.getContextData())
                     .filter(cd -> ! cd.isEmpty())
                     .ifPresent(cd -> ctxtProps.putAll(cd.toMap()));
-            Optional.of(event.getContextStack()).filter(cs -> cs.getDepth() > 0).ifPresent(cs -> eventMap.put("contextStack", cs.asList()));
-            eventMap.put("threadId", event.getThreadId());
-            eventMap.put("threadPriority", event.getThreadPriority());
+            Optional.of(event.getContextStack()).filter(cs -> cs.getDepth() > 0).ifPresent(cs -> eventMap.put(FieldsName.CONTEXTSTACK, cs.asList()));
             if (locationInfo) {
                 Optional.ofNullable(event.getSource()).ifPresent(ste -> {
                     Map<String, Object> locationInfo = new HashMap<>(4);
