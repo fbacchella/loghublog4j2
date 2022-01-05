@@ -1,7 +1,5 @@
 package fr.loghub.logservices.msgpack;
 
-import fr.loghub.logservices.FieldsName;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.Instant;
@@ -118,10 +116,10 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
 
     private Map<String, Object> resolveThrowable(Throwable t) {
         Map<String, Object> exception = new HashMap<>(4);
-        Optional.ofNullable(t.getMessage()).ifPresent(m -> exception.put(FieldsName.THROWN_MESSAGE, m));
-        exception.put(FieldsName.THROWN_NAME, t.getClass().getName());
+        Optional.ofNullable(t.getMessage()).ifPresent(m -> exception.put("message", m));
+        exception.put("class", t.getClass().getName());
         List<String> stack = Arrays.stream(t.getStackTrace()).map(StackTraceElement::toString).map(i -> i.replace("\t", "")).collect(Collectors.toList());
-        exception.put(FieldsName.THROWN_EXTENDEDSTACKTRACE, stack);
+        exception.put("stack", stack);
         Optional.ofNullable(t.getCause())
                 .map(this::resolveThrowable)
                 .ifPresent(i -> exception.put("cause", i));
@@ -136,6 +134,12 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
         } finally {
             packer.get().clear();
         }
+    }
+
+    @Override
+    public void clear() {
+        keys.clear();
+        super.clear();
     }
 
     @Override

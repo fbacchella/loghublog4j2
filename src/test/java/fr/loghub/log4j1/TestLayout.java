@@ -1,6 +1,5 @@
 package fr.loghub.log4j1;
 
-import fr.loghub.logservices.FieldsName;
 import zmq.ZMQ;
 
 import java.io.IOException;
@@ -68,26 +67,36 @@ public class TestLayout {
         }
         Assert.assertEquals(2, allmessages.size());
         Map<String, ?> msg1 = allmessages.remove(0);
-        System.out.println(msg1);
-        Assert.assertEquals("fr.loghub.log4j1.TestLayout", msg1.get(FieldsName.LOGGER));
-        Assert.assertTrue(msg1.get(FieldsName.INSTANT) instanceof MessagePackExtensionType);
-        Assert.assertTrue(msg1.containsKey(FieldsName.EXCEPTION));
-        Assert.assertEquals("1 2", msg1.get(FieldsName.CONTEXTSTACK));
-        Assert.assertTrue(msg1.containsKey(FieldsName.CONTEXTPROPERTIES));
-        Assert.assertEquals("main", msg1.get(FieldsName.THREADNAME));
-        Assert.assertEquals("message 1", msg1.get(FieldsName.MESSAGE));
-        Assert.assertEquals("DEBUG", msg1.get(FieldsName.LEVEL));
+        Assert.assertEquals("fr.loghub.log4j1.TestLayout", msg1.remove(FieldsName.LOGGERNAME));
+        Assert.assertTrue(msg1.remove(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
+        System.out.println(msg1.get(FieldsName.THROWN));
+        Assert.assertNotNull(msg1.remove(FieldsName.THROWN));
+        Assert.assertEquals("1 2", msg1.remove(FieldsName.NDC));
+        Assert.assertTrue(msg1.containsKey(FieldsName.PROPERTIES));
+        Assert.assertEquals("main", msg1.remove(FieldsName.THREADNAME));
+        Assert.assertEquals("message 1", msg1.remove(FieldsName.MESSAGE));
+        Assert.assertEquals("DEBUG", msg1.remove(FieldsName.LEVEL));
+        Map<String, Object> location_info1 = (Map<String, Object>) msg1.remove(FieldsName.LOCATIONINFO);
+        Assert.assertEquals("TestLayout.java", location_info1.remove(FieldsName.LOCATIONINFO_FILENAME));
+        Assert.assertEquals("testMsgPack", location_info1.remove(FieldsName.LOCATIONINFO_METHOD));
+        Assert.assertEquals("fr.loghub.log4j1.TestLayout", location_info1.remove(FieldsName.LOCATIONINFO_CLASS));
+        Assert.assertNotNull(location_info1.remove(FieldsName.LOCATIONINFO_LINE));
+        Assert.assertTrue(location_info1.isEmpty());
+        Map<String, Object> properties1 = (Map<String, Object>) msg1.remove(FieldsName.PROPERTIES);
+        Assert.assertEquals("testing", properties1.remove("application"));
+        Assert.assertEquals("localhost", properties1.remove("hostname"));
+        Assert.assertTrue(properties1.isEmpty());
+        Assert.assertTrue(msg1.isEmpty());
 
         Map<String, ?> msg2 = allmessages.remove(0);
-        Assert.assertEquals("fr.loghub.log4j1.TestLayout", msg2.get(FieldsName.LOGGER));
-        Assert.assertTrue(msg2.get(FieldsName.INSTANT) instanceof MessagePackExtensionType);
-        Assert.assertFalse(msg2.containsKey(FieldsName.EXCEPTION));
-        Assert.assertFalse(msg2.containsKey(FieldsName.CONTEXTSTACK));
-        Assert.assertTrue(msg2.containsKey(FieldsName.CONTEXTPROPERTIES));
-        Assert.assertEquals("main", msg2.get(FieldsName.THREADNAME));
-        Assert.assertEquals("message 2", msg2.get(FieldsName.MESSAGE));
-        Assert.assertEquals("WARN", msg2.get(FieldsName.LEVEL));
-
+        Assert.assertEquals("fr.loghub.log4j1.TestLayout", msg2.remove(FieldsName.LOGGERNAME));
+        Assert.assertTrue(msg2.remove(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
+        Assert.assertFalse(msg2.containsKey(FieldsName.THROWN));
+        Assert.assertTrue(msg2.containsKey(FieldsName.PROPERTIES));
+        Assert.assertEquals("main", msg2.remove(FieldsName.THREADNAME));
+        Assert.assertEquals("message 2", msg2.remove(FieldsName.MESSAGE));
+        Assert.assertEquals("WARN", msg2.remove(FieldsName.LEVEL));
+        Map<String, Object> location_info2 = (Map<String, Object>) msg2.remove(FieldsName.LOCATIONINFO);
     }
 
 }

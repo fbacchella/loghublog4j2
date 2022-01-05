@@ -1,7 +1,7 @@
 package fr.loghub.log4j1.msgpack;
 
 import fr.loghub.log4j1.Serializer;
-import fr.loghub.logservices.FieldsName;
+import fr.loghub.log4j1.FieldsName;
 import fr.loghub.logservices.msgpack.MsgPacker;
 
 import java.io.IOException;
@@ -22,21 +22,21 @@ public class MsgPackSerializer implements Serializer {
     public byte[] objectToBytes(LoggingEvent event) throws IOException {
         try (MessageBufferPacker packer = MessagePack.newDefaultBufferPacker()){
             MsgPacker eventMap = new MsgPacker(16);
-            eventMap.put(FieldsName.LOGGER, event.getLoggerName());
-            eventMap.put(FieldsName.INSTANT, Instant.ofEpochMilli(event.getTimeStamp()));
+            eventMap.put(FieldsName.LOGGERNAME, event.getLoggerName());
+            eventMap.put(FieldsName.TIMESTAMP, Instant.ofEpochMilli(event.getTimeStamp()));
             eventMap.put(FieldsName.LEVEL, event.getLevel().toString());
             eventMap.put(FieldsName.THREADNAME, event.getThreadName());
             if (event.locationInformationExists()) {
                 Map<String, String> locationinfo = new HashMap<>(4);
                 locationinfo.put(FieldsName.LOCATIONINFO_CLASS, event.getLocationInformation().getClassName());
-                locationinfo.put(FieldsName.LOCATIONINFO_FILE, event.getLocationInformation().getFileName());
+                locationinfo.put(FieldsName.LOCATIONINFO_FILENAME, event.getLocationInformation().getFileName());
                 locationinfo.put(FieldsName.LOCATIONINFO_METHOD, event.getLocationInformation().getMethodName());
                 locationinfo.put(FieldsName.LOCATIONINFO_LINE, event.getLocationInformation().getLineNumber());
                 eventMap.put(FieldsName.LOCATIONINFO, locationinfo);
             }
-            Optional.ofNullable(event.getProperties()).filter(m -> ! m.isEmpty()).ifPresent(s -> eventMap.put(FieldsName.CONTEXTPROPERTIES, s));
+            Optional.ofNullable(event.getProperties()).filter(m -> ! m.isEmpty()).ifPresent(s -> eventMap.put(FieldsName.PROPERTIES, s));
             Optional.ofNullable(event.getNDC()).filter(s -> ! s.isEmpty()).ifPresent(s -> eventMap.put(FieldsName.NDC, s));
-            Optional.ofNullable(event.getThrowableInformation()).ifPresent(ti -> eventMap.put(FieldsName.EXCEPTION, ti.getThrowable()));
+            Optional.ofNullable(event.getThrowableInformation()).ifPresent(ti -> eventMap.put(FieldsName.THROWN, ti.getThrowable()));
             eventMap.put(FieldsName.MESSAGE, event.getRenderedMessage());
 
             Value v = ValueFactory.newMap(eventMap);
@@ -45,4 +45,5 @@ public class MsgPackSerializer implements Serializer {
             return packer.toByteArray();
         }
     }
+
 }
