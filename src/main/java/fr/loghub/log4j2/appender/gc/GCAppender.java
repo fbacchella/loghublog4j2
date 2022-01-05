@@ -2,6 +2,8 @@ package fr.loghub.log4j2.appender.gc;
 
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -57,24 +59,24 @@ public class GCAppender extends AbstractAppender {
     private final Level level;
     private final String parent;
     
-    private final Map<ObjectName, NotificationListener> listeners;
+    private final List<Map.Entry<ObjectName, NotificationListener>> listeners;
 
     protected GCAppender(Builder builder) {
         super(builder.getName(), builder.getFilter(), builder.getLayout(), builder.isIgnoreExceptions(), builder.getPropertyArray());
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
 
         List<GarbageCollectorMXBean> gcs = ManagementFactory.getGarbageCollectorMXBeans();
-        listeners = new HashMap<>(gcs.size());
+        listeners = new ArrayList<>(gcs.size());
         gcs.stream().map(GarbageCollectorMXBean::getObjectName).forEach(on -> {
             try {
                 NotificationListener nl = this::getEvent;
-                listeners.put(on, nl);
+                listeners.add(new AbstractMap.SimpleImmutableEntry(on, nl));
                 server.addNotificationListener(on, nl, null, null);
             } catch (InstanceNotFoundException ex) {
                 throw new ConfigurationException(ex);
             }
         });
-        level = Level.getLevel(builder.level.toUpperCase(Locale.US));
+        level = Level.getLevel(builder.level.toUpperCase(Locale.ENGLISH));
         parent = builder.parent;
     }
 
@@ -82,12 +84,12 @@ public class GCAppender extends AbstractAppender {
     protected void setStopping() {
         super.setStopping();
         MBeanServer server = ManagementFactory.getPlatformMBeanServer();
-        listeners.forEach((t, u) -> {
+        listeners.forEach(e -> {
             try {
-                server.removeNotificationListener(t, u);
-            } catch (InstanceNotFoundException | ListenerNotFoundException e) {
-                AbstractAppender.LOGGER.error("Can't remove listener a listener from {}", e.getMessage());
-                AbstractAppender.LOGGER.catching(Level.DEBUG, e);
+                server.removeNotificationListener(e.getKey(), e.getValue());
+            } catch (InstanceNotFoundException | ListenerNotFoundException ex) {
+                AbstractAppender.LOGGER.error("Can't remove listener \"{}\": {}", e.getKey(), ex.getMessage());
+                AbstractAppender.LOGGER.catching(Level.DEBUG, ex);
             }
         });
     }
