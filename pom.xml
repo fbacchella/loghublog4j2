@@ -74,6 +74,36 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>legacy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>legacy</shadedClassifierName>
+                            <filters>
+                                <filter>
+                                    <!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/org/apache/logging/log4j/</exclude>
+                                        <exclude>fr/loghub/log4j2/</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.apache.logging.log4j:*</exclude>
+                                </excludes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>zmq1</id>
                         <phase>package</phase>
                         <goals>
@@ -92,6 +122,7 @@
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
                                         <exclude>META-INF/org/apache/logging/log4j/</exclude>
+                                        <exclude>fr/loghub/log4j/</exclude>
                                         <exclude>fr/loghub/log4j2/</exclude>
                                         <exclude>fr/loghub/*/msgpack/</exclude>
                                     </excludes>
@@ -123,6 +154,7 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>fr/loghub/log4j/</exclude>
                                         <exclude>fr/loghub/log4j1/</exclude>
                                         <exclude>fr/loghub/log4j2/appender/gc/</exclude>
                                         <exclude>fr/loghub/log4j2/layout/msgpack/</exclude>
@@ -156,9 +188,11 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>fr/loghub/log4j/</exclude>
                                         <exclude>fr/loghub/log4j1/</exclude>
                                         <exclude>fr/loghub/log4j2/appender/zmq/</exclude>
                                         <exclude>fr/loghub/log4j2/layout/</exclude>
+                                        <exclude>fr/loghub/log4j2/FieldsName.class</exclude>
                                         <exclude>fr/loghub/logservices/</exclude>
                                     </excludes>
                                 </filter>
@@ -191,6 +225,8 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/org/</exclude>
+                                        <exclude>fr/loghub/log4j/</exclude>
                                         <exclude>fr/loghub/log4j1/zmq</exclude>
                                         <exclude>fr/loghub/log4j2/</exclude>
                                         <exclude>fr/loghub/logservices/zmq/</exclude>
@@ -232,6 +268,7 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>fr/loghub/log4j/</exclude>
                                         <exclude>fr/loghub/log4j1/</exclude>
                                         <exclude>fr/loghub/log4j2/appender/</exclude>
                                         <exclude>fr/loghub/logservices/zmq/</exclude>

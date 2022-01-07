@@ -69,7 +69,6 @@ public class TestLayout {
         Map<String, ?> msg1 = allmessages.remove(0);
         Assert.assertEquals("fr.loghub.log4j1.TestLayout", msg1.remove(FieldsName.LOGGERNAME));
         Assert.assertTrue(msg1.remove(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
-        System.out.println(msg1.get(FieldsName.THROWN));
         Assert.assertNotNull(msg1.remove(FieldsName.THROWN));
         Assert.assertEquals("1 2", msg1.remove(FieldsName.NDC));
         Assert.assertTrue(msg1.containsKey(FieldsName.PROPERTIES));
