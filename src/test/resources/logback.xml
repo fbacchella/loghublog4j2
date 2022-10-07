@@ -1,0 +1,26 @@
+<Configuration status="trace">
+
+    <statusListener class="fr.loghub.logback.StatusListener" />
+
+    <appender name="ZMQAppender" class="fr.loghub.logback.appender.ZMQAppender">
+        <endpoint>tcp://localhost:${fr.loghub.logback.test.port}</endpoint>
+        <type>push</type>
+        <method>connect</method>
+        <hwm>1000</hwm>
+        <encoder class="fr.loghub.logback.encoder.msgpack.MsgPackEncoder">
+            <additionalField>
+                <name>name1</name>
+                <value>1</value>
+            </additionalField>
+            <additionalField>
+                <name>name2</name>
+                <value>2</value>
+            </additionalField>
+        </encoder>
+    </appender>
+
+    <root level="DEBUG">
+        <appender-ref ref="ZMQAppender"/>
+    </root>
+
+</Configuration>

@@ -62,6 +62,9 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
     public void put(String k, long v) {
         store(k, v, m -> ValueFactory.newInteger(v));
     }
+    public void put(String k, Object[] v) {
+        store(k, v, this::map);
+    }
     private Value map(Object m) {
         if (m == null) {
             return ValueFactory.newNil();
@@ -83,6 +86,8 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
         } else if (m instanceof Instant) {
             byte[] bytes = getInstantBytes((Instant) m);
             return ValueFactory.newExtension((byte)-1, bytes);
+        } else if (m.getClass().isArray() && Object.class.isAssignableFrom(m.getClass().getComponentType())) {
+            return ValueFactory.newArray(Arrays.stream((Object[])m).map(this::map).toArray(Value[]::new));
         } else {
             return ValueFactory.newString(m.toString());
         }

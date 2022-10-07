@@ -172,6 +172,42 @@
                                 <excludes>
                                     <exclude>org.msgpack:*</exclude>
                                     <exclude>log4j:*</exclude>
+                                    <exclude>ch.qos.logback:*</exclude>
+                                </excludes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>zmqlb</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>zmqappenderlb</shadedClassifierName>
+                            <filters>
+                                <filter>
+                                    <!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>fr/loghub/log4j/</exclude>
+                                        <exclude>fr/loghub/log4j1/</exclude>
+                                        <exclude>fr/loghub/log4j2/</exclude>
+                                        <exclude>fr/loghub/logback/</exclude>
+                                        <exclude>fr/loghub/logservices/msgpack/</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.msgpack:*</exclude>
+                                    <exclude>log4j:*</exclude>
+                                    <exclude>org.apache.logging.log4j:*</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>
@@ -294,6 +330,50 @@
                                     <exclude>org.zeromq:*</exclude>
                                     <exclude>eu.neilalexander:*</exclude>
                                     <exclude>log4j:*</exclude>
+                                    <exclude>ch.qos.logback:*</exclude>
+                                </excludes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>msgpacklb</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <minimizeJar>true</minimizeJar>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>msgpacklayoutlb</shadedClassifierName>
+                            <filters>
+                                <filter>
+                                    <!-- Shading signed JARs will fail without this. http://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar -->
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/org/</exclude>
+                                        <exclude>fr/loghub/log4j/</exclude>
+                                        <exclude>fr/loghub/log4j1/</exclude>
+                                        <exclude>fr/loghub/log4j2/</exclude>
+                                        <exclude>fr/loghub/logback/appender/</exclude>
+                                        <exclude>fr/loghub/logservices/zmq/</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.msgpack:msgpack-core</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                            </filters>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>org.zeromq:*</exclude>
+                                    <exclude>eu.neilalexander:*</exclude>
+                                    <exclude>log4j:*</exclude>
+                                    <exclude>org.apache.logging.log4j:*</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>
