@@ -99,12 +99,14 @@
                                         <exclude>META-INF/*.RSA</exclude>
                                         <exclude>META-INF/org/apache/logging/log4j/</exclude>
                                         <exclude>fr/loghub/log4j2/</exclude>
+                                        <exclude>fr/loghub/logback/</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
                             <artifactSet>
                                 <excludes>
                                     <exclude>org.apache.logging.log4j:*</exclude>
+                                    <exclude>ch.qos.logback:*</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>
@@ -129,8 +131,10 @@
                                         <exclude>META-INF/*.RSA</exclude>
                                         <exclude>META-INF/org/apache/logging/log4j/</exclude>
                                         <exclude>fr/loghub/log4j/</exclude>
+                                        <exclude>fr/loghub/log4j1/msgpack/</exclude>
                                         <exclude>fr/loghub/log4j2/</exclude>
-                                        <exclude>fr/loghub/*/msgpack/</exclude>
+                                        <exclude>fr/loghub/logback/</exclude>
+                                        <exclude>fr/loghub/logservices/msgpack/</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
@@ -138,6 +142,7 @@
                                 <excludes>
                                     <exclude>org.msgpack:*</exclude>
                                     <exclude>org.apache.logging.log4j:*</exclude>
+                                    <exclude>ch.qos.logback:*</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>
@@ -164,6 +169,7 @@
                                         <exclude>fr/loghub/log4j1/</exclude>
                                         <exclude>fr/loghub/log4j2/appender/gc/</exclude>
                                         <exclude>fr/loghub/log4j2/layout/msgpack/</exclude>
+                                        <exclude>fr/loghub/logback/</exclude>
                                         <exclude>fr/loghub/logservices/msgpack/</exclude>
                                     </excludes>
                                 </filter>
@@ -195,10 +201,11 @@
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/org/</exclude>
                                         <exclude>fr/loghub/log4j/</exclude>
                                         <exclude>fr/loghub/log4j1/</exclude>
                                         <exclude>fr/loghub/log4j2/</exclude>
-                                        <exclude>fr/loghub/logback/</exclude>
+                                        <exclude>fr/loghub/logback/encoder/</exclude>
                                         <exclude>fr/loghub/logservices/msgpack/</exclude>
                                     </excludes>
                                 </filter>
@@ -245,6 +252,7 @@
                                     <exclude>org.zeromq:*</exclude>
                                     <exclude>eu.neilalexander:*</exclude>
                                     <exclude>log4j:*</exclude>
+                                    <exclude>ch.qos.logback:*</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>
@@ -269,8 +277,9 @@
                                         <exclude>META-INF/*.RSA</exclude>
                                         <exclude>META-INF/org/</exclude>
                                         <exclude>fr/loghub/log4j/</exclude>
-                                        <exclude>fr/loghub/log4j1/zmq</exclude>
+                                        <exclude>fr/loghub/log4j1/zmq/</exclude>
                                         <exclude>fr/loghub/log4j2/</exclude>
+                                        <exclude>fr/loghub/logback/</exclude>
                                         <exclude>fr/loghub/logservices/zmq/</exclude>
                                     </excludes>
                                     <includes>
@@ -288,6 +297,7 @@
                                     <exclude>org.zeromq:*</exclude>
                                     <exclude>eu.neilalexander:*</exclude>
                                     <exclude>org.apache.logging.log4j:*</exclude>
+                                    <exclude>ch.qos.logback:*</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>
@@ -313,6 +323,7 @@
                                         <exclude>fr/loghub/log4j/</exclude>
                                         <exclude>fr/loghub/log4j1/</exclude>
                                         <exclude>fr/loghub/log4j2/appender/</exclude>
+                                        <exclude>fr/loghub/logback/</exclude>
                                         <exclude>fr/loghub/logservices/zmq/</exclude>
                                     </excludes>
                                     <includes>

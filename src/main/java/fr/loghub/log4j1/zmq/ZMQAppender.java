@@ -1,6 +1,6 @@
 package fr.loghub.log4j1.zmq;
 
-import fr.loghub.log4j1.SerializerAppender;
+import fr.loghub.log4j1.serializer.SerializerAppender;
 import fr.loghub.logservices.zmq.Logger;
 import fr.loghub.logservices.zmq.Method;
 import fr.loghub.logservices.zmq.Publisher;

@@ -1,7 +1,7 @@
 package fr.loghub.log4j1.msgpack;
 
-import fr.loghub.log4j1.Serializer;
 import fr.loghub.log4j1.FieldsName;
+import fr.loghub.log4j1.serializer.Serializer;
 import fr.loghub.logservices.msgpack.MsgPacker;
 
 import java.io.IOException;

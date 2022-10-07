@@ -1,4 +1,4 @@
-package fr.loghub.log4j1;
+package fr.loghub.log4j1.serializer;
 
 import lombok.Getter;
 import lombok.Setter;
