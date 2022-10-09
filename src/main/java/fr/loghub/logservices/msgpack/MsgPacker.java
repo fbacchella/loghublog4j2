@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,19 +36,19 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
         return keys.contains(key);
     }
 
-    public void put(String k, Number v) {
-        store(k, v, i -> ValueFactory.newInteger(i.longValue()));
-    }
     public void put(String k, String v) {
         store(k, v, ValueFactory::newString);
     }
-    public void put(String k, List<? extends Object> v) {
+    public void put(String k, List<?> v) {
         store(k, v, this::map);
     }
     public void put(String k, Instant v) {
         store(k, v, this::map);
     }
-    public void put(String k, Map<String, ? extends Object> v) {
+    public void put(String k, Date v) {
+        store(k, v, this::map);
+    }
+    public void put(String k, Map<String, ?> v) {
         store(k, v, this::map);
     }
     public void put(String k, Throwable v) {
@@ -65,11 +66,12 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
     public void put(String k, Object[] v) {
         store(k, v, this::map);
     }
+
     private Value map(Object m) {
         if (m == null) {
             return ValueFactory.newNil();
         } else if (m instanceof List) {
-            List<Value> elements = ((List<?>)m).stream().map(this::map).collect(Collectors.toList());
+            Value[] elements = ((List<?>)m).stream().map(this::map).toArray(Value[]::new);
             return ValueFactory.newArray(elements);
         } else if (m instanceof Throwable) {
             MapBuilder builder = ValueFactory.newMapBuilder();
@@ -77,8 +79,8 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
             return builder.build();
         } else if (m instanceof Number) {
             return ValueFactory.newInteger(((Number)m).longValue());
-        } else if (java.lang.Boolean.TYPE.isInstance(m)) {
-            return ValueFactory.newBoolean((boolean) m);
+        } else if (m instanceof Boolean) {
+            return ValueFactory.newBoolean((Boolean) m);
         } else if (m instanceof Map) {
             MapBuilder builder = ValueFactory.newMapBuilder();
             ((Map<?, ?>)m).forEach((k,v) -> builder.put(map(k), map(v)));
@@ -86,9 +88,21 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
         } else if (m instanceof Instant) {
             byte[] bytes = getInstantBytes((Instant) m);
             return ValueFactory.newExtension((byte)-1, bytes);
+        } else if (m instanceof Date) {
+            byte[] bytes = getInstantBytes(((Date) m).toInstant());
+            return ValueFactory.newExtension((byte)-1, bytes);
+        } else if (m instanceof int[]) {
+           return ValueFactory.newArray(Arrays.stream((int[])m).mapToObj(ValueFactory::newInteger).toArray(Value[]::new));
+        } else if (m instanceof long[]) {
+            return ValueFactory.newArray(Arrays.stream((long[])m).mapToObj(ValueFactory::newInteger).toArray(Value[]::new));
+         } else if (m instanceof double[]) {
+            return ValueFactory.newArray(Arrays.stream((double[])m).mapToObj(ValueFactory::newFloat).toArray(Value[]::new));
         } else if (m.getClass().isArray() && Object.class.isAssignableFrom(m.getClass().getComponentType())) {
             return ValueFactory.newArray(Arrays.stream((Object[])m).map(this::map).toArray(Value[]::new));
+        } else if (m instanceof String) {
+            return ValueFactory.newString((String)m);
         } else {
+            assert false : "Unhandled type " +  m.getClass();
             return ValueFactory.newString(m.toString());
         }
     }
@@ -148,7 +162,7 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         packer.get().clear();
     }
 
