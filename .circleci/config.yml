@@ -39,9 +39,9 @@ jobs:
                 paths:
                     - home/circleci/.m2/repository
                     - home/circleci/project/target
-    testsj18:
+    testsj17:
         docker:
-            - image: cimg/openjdk:18.0
+            - image: cimg/openjdk:17.0
         steps:
             - attach_workspace:
                 at: /tmp/ws
@@ -71,9 +71,9 @@ jobs:
                 paths:
                     - home/circleci/.m2/repository
                     - home/circleci/.sonar/cache
-    testsj17:
+    testsj18:
         docker:
-            - image: cimg/openjdk:17.0
+            - image: cimg/openjdk:18.0
         steps:
             - attach_workspace:
                   at: /tmp/ws
@@ -91,7 +91,7 @@ jobs:
                       MAVEN_OPTS: "-Xmx512m"
             - store_test_results:
                   path: target/surefire-reports
-            #don't persist_to_workspace, can't be done in parallel with testsj17
+            #don't persist_to_workspace, can't be done in parallel with testsj18
     testsj11:
         docker:
             - image: cimg/openjdk:11.0
