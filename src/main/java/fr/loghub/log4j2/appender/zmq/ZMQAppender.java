@@ -9,6 +9,7 @@ import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.appender.AbstractManager;
 import org.apache.logging.log4j.core.config.Node;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
@@ -47,7 +48,7 @@ public class ZMQAppender extends AbstractAppender {
         }
 
         public ZMQConfiguration<LoggerContext> configuration() {
-            return new ZMQConfiguration<LoggerContext>(getConfiguration().getLoggerContext(),
+            return new ZMQConfiguration<>(getConfiguration().getLoggerContext(),
                                         endpoint,
                                         SocketType.valueOf(type.toUpperCase(Locale.US)),
                                         Method.valueOf(method.toUpperCase(Locale.US)),
@@ -67,7 +68,7 @@ public class ZMQAppender extends AbstractAppender {
 
     protected ZMQAppender(ZMQBuilder builder) {
         super(builder.getName(), builder.getFilter(), builder.getLayout(), builder.isIgnoreExceptions(), builder.getPropertyArray());
-        manager = ZMQManager.getManager(builder.getName(), ZMQManager.FACTORY, builder.configuration());
+        manager = AbstractManager.getManager(builder.getName(), ZMQManager.FACTORY, builder.configuration());
     }
 
     @Override

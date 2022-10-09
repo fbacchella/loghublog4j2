@@ -4,7 +4,6 @@ import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -20,6 +19,7 @@ import javax.management.openmbean.CompositeDataSupport;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.AbstractLifeCycle;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.Core;
 import org.apache.logging.log4j.core.LogEvent;
@@ -70,7 +70,7 @@ public class GCAppender extends AbstractAppender {
         gcs.stream().map(GarbageCollectorMXBean::getObjectName).forEach(on -> {
             try {
                 NotificationListener nl = this::getEvent;
-                listeners.add(new AbstractMap.SimpleImmutableEntry(on, nl));
+                listeners.add(new AbstractMap.SimpleImmutableEntry<>(on, nl));
                 server.addNotificationListener(on, nl, null, null);
             } catch (InstanceNotFoundException ex) {
                 throw new ConfigurationException(ex);
@@ -88,8 +88,8 @@ public class GCAppender extends AbstractAppender {
             try {
                 server.removeNotificationListener(e.getKey(), e.getValue());
             } catch (InstanceNotFoundException | ListenerNotFoundException ex) {
-                AbstractAppender.LOGGER.error("Can't remove listener \"{}\": {}", e.getKey(), ex.getMessage());
-                AbstractAppender.LOGGER.catching(Level.DEBUG, ex);
+                AbstractLifeCycle.LOGGER.error("Can't remove listener \"{}\": {}", e.getKey(), ex.getMessage());
+                AbstractLifeCycle.LOGGER.catching(Level.DEBUG, ex);
             }
         });
     }

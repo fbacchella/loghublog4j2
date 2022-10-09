@@ -1,5 +1,11 @@
 package fr.loghub.log4j1.zmq;
 
+import java.util.Locale;
+import java.util.function.Supplier;
+
+import org.apache.log4j.spi.ErrorCode;
+import org.zeromq.SocketType;
+
 import fr.loghub.log4j1.serializer.SerializerAppender;
 import fr.loghub.logservices.zmq.Logger;
 import fr.loghub.logservices.zmq.Method;
@@ -8,17 +14,7 @@ import fr.loghub.logservices.zmq.ZMQConfiguration;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Locale;
-import java.util.concurrent.BlockingQueue;
-import java.util.function.Supplier;
-
-import org.apache.log4j.Layout;
-import org.apache.log4j.spi.ErrorCode;
-import org.zeromq.SocketType;
-import org.zeromq.ZMQ;
-
 public class ZMQAppender extends SerializerAppender implements Logger {
-    private ZMQ.Socket socket;
     private SocketType type = SocketType.PUB;
     private Method method = Method.CONNECT;
     @Getter @Setter
@@ -29,7 +25,6 @@ public class ZMQAppender extends SerializerAppender implements Logger {
     private long maxMsgSize = -1;
     @Getter @Setter
     private int linger;
-    private BlockingQueue<byte[]> logQueue;
     private Publisher publisher;
 
     @Override
@@ -38,7 +33,7 @@ public class ZMQAppender extends SerializerAppender implements Logger {
             errorHandler.error("Unconfigured endpoint, the ZMQ appender can't log");
             return;
         }
-        ZMQConfiguration config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger);
+        ZMQConfiguration<ZMQAppender> config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger);
         publisher = new Publisher("Log4J1ZMQPublishingThread", this, config);
     }
 
@@ -77,7 +72,7 @@ public class ZMQAppender extends SerializerAppender implements Logger {
 
     /**
      * The <b>method</b> define the connection method for the ØMQ socket. It can take the value
-     * connect or bind, it's case insensitive.
+     * connect or bind, it's case-insensitive.
      * @param method
      */
     public void setMethod(String method) {

@@ -104,12 +104,12 @@ public class MsgPackLayout extends AbstractLayout<Message> {
             Optional.of(event.getContextStack()).filter(cs -> cs.getDepth() > 0).ifPresent(cs -> eventMap.put(FieldsName.CONTEXTSTACK, cs.asList()));
             if (locationInfo) {
                 Optional.ofNullable(event.getSource()).ifPresent(ste -> {
-                    Map<String, Object> locationInfo = new HashMap<>(4);
-                    locationInfo.put(FieldsName.LOCATIONINFO_CLASSNAME, ste.getClassName());
-                    locationInfo.put(FieldsName.LOCATIONINFO_FILENAME, ste.getFileName());
-                    locationInfo.put(FieldsName.LOCATIONINFO_METHODNAME, ste.getMethodName());
-                    locationInfo.put(FieldsName.LOCATIONINFO_LINENUMBER, ste.getLineNumber());
-                    eventMap.put(FieldsName.LOCATIONINFO, locationInfo);
+                    Map<String, Object> li = new HashMap<>(4);
+                    li.put(FieldsName.LOCATIONINFO_CLASSNAME, ste.getClassName());
+                    li.put(FieldsName.LOCATIONINFO_FILENAME, ste.getFileName());
+                    li.put(FieldsName.LOCATIONINFO_METHODNAME, ste.getMethodName());
+                    li.put(FieldsName.LOCATIONINFO_LINENUMBER, ste.getLineNumber());
+                    eventMap.put(FieldsName.LOCATIONINFO, li);
                 });
             }
             if (additionalFields.length > 0) {

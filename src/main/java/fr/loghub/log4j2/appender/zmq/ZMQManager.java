@@ -1,9 +1,5 @@
 package fr.loghub.log4j2.appender.zmq;
 
-import fr.loghub.logservices.zmq.Logger;
-import fr.loghub.logservices.zmq.Publisher;
-import fr.loghub.logservices.zmq.ZMQConfiguration;
-
 import java.util.concurrent.BlockingQueue;
 import java.util.function.Supplier;
 
@@ -12,9 +8,13 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractManager;
 import org.apache.logging.log4j.core.appender.ManagerFactory;
 
+import fr.loghub.logservices.zmq.Logger;
+import fr.loghub.logservices.zmq.Publisher;
+import fr.loghub.logservices.zmq.ZMQConfiguration;
+
 public class ZMQManager extends AbstractManager implements Logger {
 
-    public static final ManagerFactory<ZMQManager, ZMQConfiguration> FACTORY = ZMQManager::new;
+    public static final ManagerFactory<ZMQManager, ZMQConfiguration<LoggerContext>> FACTORY = ZMQManager::new;
 
     private final Publisher publisher;
 
@@ -44,4 +44,5 @@ public class ZMQManager extends AbstractManager implements Logger {
         AbstractManager.LOGGER.log(Level.ERROR, message.get());
         AbstractManager.LOGGER.catching(Level.DEBUG, t);
     }
+
 }

@@ -1,18 +1,17 @@
 package fr.loghub.logservices.zmq;
 
-import fr.loghub.logservices.zmq.Method;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
-
 import org.zeromq.SocketType;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NonNull;
 
-@AllArgsConstructor(access = AccessLevel.PUBLIC)
+@Data
 public class ZMQConfiguration<C> {
     @Getter @NonNull
-    C context;
+    final C context;
     @Getter @NonNull
     public final String endpoint;
     @Getter

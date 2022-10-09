@@ -1,6 +1,9 @@
 package fr.loghub.log4j1;
 
-public interface FieldsName {
+public final class FieldsName {
+    private FieldsName() {
+        // Nothing to do
+    }
     public static final String MESSAGE = "message";
     public static final String TIMESTAMP = "timestamp";
     public static final String THREADNAME = "thread_name";
@@ -15,4 +18,3 @@ public interface FieldsName {
     public static final String NDC = "ndc";
     public static final String PROPERTIES = "properties";
 }
-

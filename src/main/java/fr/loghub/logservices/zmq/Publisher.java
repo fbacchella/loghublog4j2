@@ -1,12 +1,10 @@
 package fr.loghub.logservices.zmq;
 
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.message.FormattedMessage;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
@@ -118,7 +116,6 @@ public class Publisher extends Thread {
     }
 
     private void exceptionHandler(Thread t, Throwable ex) {
-        System.out.println(t);
         logger.error(() -> "Critical exception: " + ex.getMessage(), ex);
     }
 }

@@ -1,6 +1,9 @@
 package fr.loghub.log4j2;
 
-public interface FieldsName {
+public final class FieldsName {
+    private FieldsName() {
+        // Nothing to do
+    }
     public static final String MESSAGE = "message";
     public static final String INSTANT = "instant";
     public static final String THREADNAME = "thread_name";
@@ -25,4 +28,3 @@ public interface FieldsName {
     public static final String DATA = "data";
     public static final String PARAMETERS = "data";
 }
-
