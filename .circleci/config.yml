@@ -2,7 +2,7 @@ version: 2.1
 jobs:
     checkout:
         docker:
-            - image: cimg/openjdk:17.0
+            - image: cimg/openjdk:18.0
         steps:
             - checkout
             - restore_cache:
@@ -21,7 +21,7 @@ jobs:
                     - home/circleci/project
     build:
         docker:
-            - image: cimg/openjdk:17.0
+            - image: cimg/openjdk:18.0
         steps:
             - attach_workspace:
                 at: /tmp/ws
@@ -94,7 +94,7 @@ jobs:
             #don't persist_to_workspace, can't be done in parallel with testsj17
     testsj11:
         docker:
-            - image: cimg/openjdk:17.0
+            - image: cimg/openjdk:11.0
         steps:
             - attach_workspace:
                 at: /tmp/ws
