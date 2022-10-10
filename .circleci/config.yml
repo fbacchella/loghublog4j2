@@ -188,15 +188,19 @@ workflows:
             - build:
                   requires:
                       - checkout
+                  context: "Security variables"
             - testsj8:
                   requires:
                       - build
+                  context: "Security variables"
             - testsj11:
                   requires:
                       - build
+                  context: "Security variables"
             - testsj17:
                   requires:
                       - build
+                  context: "Security variables"
             - testsj18:
                   requires:
                       - build
