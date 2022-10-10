@@ -1,6 +1,7 @@
 package fr.loghub.logback.encoder.msgpack;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,21 +28,14 @@ public class MsgPackEncoder extends EncoderBase<ILoggingEvent> {
     @Override
     public byte[] encode(ILoggingEvent event) {
         try (MsgPacker eventMap = new MsgPacker(7)){
-            eventMap.put(FieldsName.SEQUENCENUMBER, event.getSequenceNumber());
-            eventMap.put(FieldsName.INSTANT, event.getInstant());
+            eventMap.put(FieldsName.TIMESTAMP, Instant.ofEpochMilli(event.getTimeStamp()));
             eventMap.put(FieldsName.THREADNAME, event.getThreadName());
             eventMap.put(FieldsName.LEVEL, event.getLevel().toString());
             eventMap.put(FieldsName.LOGGERNAME, event.getLoggerName());
             eventMap.put(FieldsName.MESSAGE, event.getFormattedMessage());
             eventMap.put(FieldsName.PROPERTYMAP, event.getMDCPropertyMap());
-            if (event.getMarkerList() != null && ! event.getMarkerList().isEmpty()) {
-                List<String> markers = new ArrayList<>();
-                event.getMarkerList().forEach(m -> resolveMark(m, markers));
-                eventMap.put(FieldsName.MARKERS, markers);
-            }
-            if (event.getArgumentArray() != null && event.getArgumentArray().length !=0) {
-                eventMap.put(FieldsName.ARGUMENTARRAY, event.getArgumentArray());
-            }
+
+            Optional.ofNullable(event.getMarker()).ifPresent(m -> eventMap.put(FieldsName.MARKERS, resolveMark(m, new ArrayList<>())));
             Optional.ofNullable(event.getThrowableProxy()).ifPresent(t -> eventMap.put(FieldsName.THROWN, ((ThrowableProxy)event.getThrowableProxy()).getThrowable()));
 
             Map<String, String> contextData = new HashMap<>(additionalFieldList.size() + event.getMDCPropertyMap().size());
@@ -61,9 +55,10 @@ public class MsgPackEncoder extends EncoderBase<ILoggingEvent> {
         }
     }
 
-    private void resolveMark(Marker m, List<String> markers) {
+    private List<String>  resolveMark(Marker m, List<String> markers) {
         markers.add(m.getName());
         m.iterator().forEachRemaining(i -> resolveMark(i, markers));
+        return markers;
     }
 
     @Override

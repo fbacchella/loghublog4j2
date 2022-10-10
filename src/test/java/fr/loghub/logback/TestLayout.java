@@ -60,7 +60,7 @@ public class TestLayout {
         Marker testing = MarkerFactory.getMarker("TESTING_CONTEXT");
 
         logger.debug("Exception 1", new RuntimeException(new NullPointerException()));
-        logger.info(testing, "Message 1", "arg1");
+        logger.info(testing, "Message 1");
 
         do  {
             @SuppressWarnings("unchecked")
@@ -71,11 +71,10 @@ public class TestLayout {
 
         Assert.assertEquals(2, allmessages.size());
         Map<String, ?> msg1 = allmessages.remove(0);
-        Assert.assertEquals(0, msg1.remove(FieldsName.SEQUENCENUMBER));
         Assert.assertEquals("fr.loghub.logback.TestLayout", msg1.remove(FieldsName.LOGGERNAME));
         Assert.assertEquals(Thread.currentThread().getName(), msg1.remove(FieldsName.THREADNAME));
         Assert.assertEquals("DEBUG", msg1.remove(FieldsName.LEVEL));
-        Assert.assertEquals(MessagePackExtensionType.class, msg1.remove(FieldsName.INSTANT).getClass());
+        Assert.assertEquals(MessagePackExtensionType.class, msg1.remove(FieldsName.TIMESTAMP).getClass());
         Assert.assertNotNull(msg1.remove(FieldsName.THROWN));
         Assert.assertEquals("Exception 1", msg1.remove(FieldsName.MESSAGE));
         Map<?, ?> props1 = (Map)msg1.remove(FieldsName.PROPERTYMAP);
@@ -88,7 +87,7 @@ public class TestLayout {
         Map<String, ?> msg2 = allmessages.remove(0);
         Assert.assertEquals("fr.loghub.logback.TestLayout", msg2.remove(FieldsName.LOGGERNAME));
         Assert.assertEquals(Thread.currentThread().getName(), msg2.remove(FieldsName.THREADNAME));
-        Assert.assertTrue(msg2.remove(FieldsName.INSTANT) instanceof MessagePackExtensionType);
+        Assert.assertTrue(msg2.remove(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
         Assert.assertEquals("INFO", msg2.remove(FieldsName.LEVEL));
         Assert.assertNull(msg2.remove(FieldsName.THROWN));
         Assert.assertEquals("Message 1", msg2.remove(FieldsName.MESSAGE));
@@ -97,13 +96,9 @@ public class TestLayout {
         Assert.assertEquals("1", props2.get("name1"));
         Assert.assertEquals("2", props2.get("name2"));
         Assert.assertEquals(uuid, props2.get("traceid"));
-        List argsList = (List) msg2.remove(FieldsName.ARGUMENTARRAY);
-        Assert.assertEquals(1, argsList.size());
-        Assert.assertEquals("arg1", argsList.get(0));
         List markers = (List) msg2.remove(FieldsName.MARKERS);
         Assert.assertEquals(1, markers.size());
         Assert.assertEquals("TESTING_CONTEXT", markers.get(0));
-        Assert.assertEquals(0, msg2.remove(FieldsName.SEQUENCENUMBER));
         Assert.assertEquals(msg2.toString(), 0, msg2.size());
 
         Assert.assertEquals(0, StatusListener.statuses.size());
