@@ -48,7 +48,7 @@ public class TestLayout {
         Optional.ofNullable(ctx).ifPresent(ZContext::close);
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = 5000)
     public void testMsgPack() throws InterruptedException, IOException {
         List<Map<String, ?>> allmessages = new ArrayList<>();
         JsonFactory factory = new MessagePackFactory();

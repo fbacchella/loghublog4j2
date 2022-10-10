@@ -47,7 +47,7 @@ public class TestLayout {
         Optional.ofNullable(ctx).ifPresent(ZContext::close);
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void testMsgPack() throws URISyntaxException, InterruptedException, IOException {
         List<Map<String, ?>> allmessages = new ArrayList<>();
         List<Map<String, ?>> allgc = new ArrayList<>();
@@ -61,9 +61,8 @@ public class TestLayout {
         ThreadContext.put("key", "value");
         logger.warn(MarkerManager.getMarker("marker1"), "message 2");
         System.gc();
-        Thread.sleep(100);
 
-        while ((socket.getEvents() & ZMQ.ZMQ_POLLIN) != 0) {
+        do  {
             @SuppressWarnings("unchecked")
             Map<String, ?> msg = msgpack.readValue(socket.recv(), Map.class);
             if (msg.get(FieldsName.LOGGERNAME).toString().startsWith("gc.")) {
@@ -71,8 +70,10 @@ public class TestLayout {
             } else {
                 allmessages.add(msg);
             }
-        }
-        Assert.assertTrue(allmessages.size() == 2);
+            Thread.sleep(100);
+        } while ((socket.getEvents() & ZMQ.ZMQ_POLLIN) != 0);
+
+        Assert.assertEquals(2, allmessages.size());
         Map<String, ?> msg1 = allmessages.remove(0);
         Assert.assertEquals("fr.loghub.log4j2.TestLayout", msg1.remove(FieldsName.LOGGERNAME));
         Assert.assertEquals("org.apache.logging.log4j.spi.AbstractLogger", msg1.remove(FieldsName.LOGGER_FQCN));

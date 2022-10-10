@@ -44,7 +44,7 @@ public class TestLayout {
         Optional.ofNullable(ctx).ifPresent(s -> s.close());
     }
 
-    @Test
+    @Test(timeout = 5000)
     public void testMsgPack() throws URISyntaxException, InterruptedException, IOException {
         List<Map<String, ?>> allmessages = new ArrayList<>();
         JsonFactory factory = new MessagePackFactory();
@@ -58,13 +58,14 @@ public class TestLayout {
         NDC.remove();
         MDC.put("key", "value");
         logger.warn("message 2");
-        Thread.sleep(100);
 
-        while ((socket.getEvents() & ZMQ.ZMQ_POLLIN) != 0) {
+        do  {
             @SuppressWarnings("unchecked")
             Map<String, ?> msg = msgpack.readValue(socket.recv(), Map.class);
             allmessages.add(msg);
-        }
+            Thread.sleep(100);
+        } while ((socket.getEvents() & ZMQ.ZMQ_POLLIN) != 0);
+
         Assert.assertEquals(2, allmessages.size());
         Map<String, ?> msg1 = allmessages.remove(0);
         Assert.assertEquals("fr.loghub.log4j1.TestLayout", msg1.remove(FieldsName.LOGGERNAME));
@@ -72,7 +73,7 @@ public class TestLayout {
         Assert.assertNotNull(msg1.remove(FieldsName.THROWN));
         Assert.assertEquals("1 2", msg1.remove(FieldsName.NDC));
         Assert.assertTrue(msg1.containsKey(FieldsName.PROPERTIES));
-        Assert.assertEquals("main", msg1.remove(FieldsName.THREADNAME));
+        Assert.assertEquals("Time-limited test", msg1.remove(FieldsName.THREADNAME));
         Assert.assertEquals("message 1", msg1.remove(FieldsName.MESSAGE));
         Assert.assertEquals("DEBUG", msg1.remove(FieldsName.LEVEL));
         Map<String, Object> location_info1 = (Map<String, Object>) msg1.remove(FieldsName.LOCATIONINFO);
@@ -92,7 +93,7 @@ public class TestLayout {
         Assert.assertTrue(msg2.remove(FieldsName.TIMESTAMP) instanceof MessagePackExtensionType);
         Assert.assertFalse(msg2.containsKey(FieldsName.THROWN));
         Assert.assertTrue(msg2.containsKey(FieldsName.PROPERTIES));
-        Assert.assertEquals("main", msg2.remove(FieldsName.THREADNAME));
+        Assert.assertEquals("Time-limited test", msg2.remove(FieldsName.THREADNAME));
         Assert.assertEquals("message 2", msg2.remove(FieldsName.MESSAGE));
         Assert.assertEquals("WARN", msg2.remove(FieldsName.LEVEL));
         Map<String, Object> location_info2 = (Map<String, Object>) msg2.remove(FieldsName.LOCATIONINFO);
