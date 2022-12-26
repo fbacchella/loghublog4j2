@@ -42,6 +42,15 @@ public class ZMQAppender extends AbstractAppender {
         @PluginBuilderAttribute("linger")
         int linger = -1;
 
+        @PluginBuilderAttribute("peerPublicKey")
+        public String peerPublicKey;
+
+        @PluginBuilderAttribute("privateKeyFile")
+        public String privateKeyFile;
+
+        @PluginBuilderAttribute("publicKey")
+        public String publicKey;
+
         @Override
         public ZMQAppender build() {
             return new ZMQAppender(this);
@@ -49,12 +58,15 @@ public class ZMQAppender extends AbstractAppender {
 
         public ZMQConfiguration<LoggerContext> configuration() {
             return new ZMQConfiguration<>(getConfiguration().getLoggerContext(),
-                                        endpoint,
-                                        SocketType.valueOf(type.toUpperCase(Locale.US)),
-                                        Method.valueOf(method.toUpperCase(Locale.US)),
-                                        hwm,
-                                        maxMsgSize,
-                                        linger); 
+                                          endpoint,
+                                          SocketType.valueOf(type.toUpperCase(Locale.US)),
+                                          Method.valueOf(method.toUpperCase(Locale.US)),
+                                          hwm,
+                                          maxMsgSize,
+                                          linger,
+                                          peerPublicKey,
+                                          privateKeyFile,
+                                          publicKey);
         }
 
     }

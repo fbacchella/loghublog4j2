@@ -25,6 +25,12 @@ public class ZMQAppender extends SerializerAppender implements Logger {
     private long maxMsgSize = -1;
     @Getter @Setter
     private int linger;
+    @Getter @Setter
+    public String peerPublicKey;
+    @Getter @Setter
+    public String privateKeyFile;
+    @Getter @Setter
+    public String publicKey;
     private Publisher publisher;
 
     @Override
@@ -33,7 +39,8 @@ public class ZMQAppender extends SerializerAppender implements Logger {
             errorHandler.error("Unconfigured endpoint, the ZMQ appender can't log");
             return;
         }
-        ZMQConfiguration<ZMQAppender> config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger);
+        ZMQConfiguration<ZMQAppender> config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger,
+                                                         peerPublicKey, privateKeyFile, publicKey);
         publisher = new Publisher("Log4J1ZMQPublishingThread", this, config);
     }
 

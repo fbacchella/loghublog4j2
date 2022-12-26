@@ -1,18 +1,83 @@
 package fr.loghub.logservices.zmq;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Provider;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.zeromq.SocketType;
+import org.zeromq.ZConfig;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQ.Socket;
 
+import com.neilalexander.jnacl.crypto.curve25519;
+import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;
+
+import fr.loghub.naclprovider.NaclPrivateKey;
+import fr.loghub.naclprovider.NaclPrivateKeySpec;
+import fr.loghub.naclprovider.NaclProvider;
+import fr.loghub.naclprovider.NaclPublicKeySpec;
 import lombok.Getter;
 
 public class Publisher extends Thread {
+
+    static class NaClServices {
+        private static final Provider provider;
+        private static final KeyPairGenerator generator;
+        private static final KeyFactory kf;
+        static {
+            try {
+                provider = new NaclProvider();
+                generator = KeyPairGenerator.getInstance(NaclProvider.NAME, provider);
+                kf = KeyFactory.getInstance(NaclProvider.NAME, provider);
+            } catch (NoSuchAlgorithmException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+        static byte[] readPrivateKey(String path) {
+            try {
+                byte[] key = Files.readAllBytes(Paths.get(path));
+                PKCS8EncodedKeySpec encoded = new PKCS8EncodedKeySpec(key);
+                PrivateKey pv = new NaclPrivateKey(encoded);
+                NaclPrivateKeySpec naclspec = kf.getKeySpec(pv, NaclPrivateKeySpec.class);
+                return naclspec.getBytes();
+            } catch (IOException | InvalidKeyException | InvalidKeySpecException ex) {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+        static byte[] writePair(String privatePath) {
+            try {
+                generator.initialize(256);
+                KeyPair kp = generator.generateKeyPair();
+                PrivateKey pv = kp.getPrivate();
+                Files.write(Paths.get(privatePath), pv.getEncoded());
+
+                PublicKey pb = kp.getPublic();
+                NaclPublicKeySpec naclpubspec = kf.getKeySpec(pb, NaclPublicKeySpec.class);
+
+                ZConfig zconf = new ZConfig("root", null);
+                zconf.putValue("curve/public-key", ZMQ.Curve.z85Encode(naclpubspec.getBytes()));
+                zconf.save(privatePath.replace(".p8", ".zpl"));
+                return naclpubspec.getBytes();
+            } catch (IOException | InvalidKeySpecException ex) {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+    }
 
     private ZMQ.Socket socket;
     private final ZContext ctx;
@@ -47,6 +112,24 @@ public class Publisher extends Thread {
                         if (socket == null) {
                             // No socket returned, appender was closed
                             break;
+                        }
+                        if (config.peerPublicKey != null && ! config.peerPublicKey.isEmpty()) {
+                            socket.setCurveServerKey(ZMQ.Curve.z85Decode(config.peerPublicKey));
+                        }
+                        byte[] publicKey = (config.publicKey != null && ! config.publicKey.isEmpty()) ? ZMQ.Curve.z85Decode(config.publicKey) : null;
+                        if (config.privateKeyFile != null && ! config.privateKeyFile.isEmpty()) {
+                            if (! Files.exists(Paths.get(config.privateKeyFile))) {
+                                publicKey = NaClServices.writePair(config.privateKeyFile);
+                            }
+                            byte[] secretKey = NaClServices.readPrivateKey(config.privateKeyFile);
+                            socket.setCurveSecretKey(secretKey);
+                            if (publicKey == null) {
+                                publicKey = new byte[curve25519xsalsa20poly1305.crypto_secretbox_PUBLICKEYBYTES];
+                                curve25519.crypto_scalarmult_base(publicKey, secretKey);
+                            }
+                        }
+                        if (publicKey != null) {
+                            socket.setCurvePublicKey(publicKey);
                         }
                         Optional.of(config.getMaxMsgSize()).filter(i -> i > 0).ifPresent(socket::setMaxMsgSize);
                         Optional.of(config.getLinger()).filter(i -> i > 0).ifPresent(socket::setLinger);

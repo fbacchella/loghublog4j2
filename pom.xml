@@ -32,6 +32,11 @@
             <version>0.5.3-SNAPSHOT</version>
         </dependency>
         <dependency>
+            <groupId>fr.loghub</groupId>
+            <artifactId>naclprovider</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>2.19.0</version>
@@ -292,6 +297,7 @@
                             <artifactSet>
                                 <excludes>
                                     <exclude>org.zeromq:*</exclude>
+                                    <exclude>fr.loghub:naclprovider</exclude>
                                     <exclude>eu.neilalexander:*</exclude>
                                     <exclude>org.apache.logging.log4j:*</exclude>
                                     <exclude>ch.qos.logback:*</exclude>
@@ -336,6 +342,7 @@
                             <artifactSet>
                                 <excludes>
                                     <exclude>org.zeromq:*</exclude>
+                                    <exclude>fr.loghub:naclprovider</exclude>
                                     <exclude>eu.neilalexander:*</exclude>
                                     <exclude>log4j:*</exclude>
                                     <exclude>ch.qos.logback:*</exclude>
@@ -379,6 +386,7 @@
                             <artifactSet>
                                 <excludes>
                                     <exclude>org.zeromq:*</exclude>
+                                    <exclude>fr.loghub:naclprovider</exclude>
                                     <exclude>eu.neilalexander:*</exclude>
                                     <exclude>log4j:*</exclude>
                                     <exclude>org.apache.logging.log4j:*</exclude>

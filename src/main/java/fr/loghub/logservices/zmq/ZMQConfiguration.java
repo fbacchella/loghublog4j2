@@ -24,4 +24,11 @@ public class ZMQConfiguration<C> {
     public final long maxMsgSize;
     @Getter
     public final int linger;
+    @Getter
+    public final String peerPublicKey;
+    @Getter
+    public final String privateKeyFile;
+    @Getter
+    public final String publicKey;
+
 }

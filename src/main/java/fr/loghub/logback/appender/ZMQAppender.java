@@ -58,6 +58,12 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
     private long maxMsgSize = -1;
     @Getter @Setter
     private int linger;
+    @Getter @Setter
+    public String peerPublicKey;
+    @Getter @Setter
+    public String privateKeyFile;
+    @Getter @Setter
+    public String publicKey;
     private Publisher publisher;
 
     /**
@@ -102,7 +108,8 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
             return;
         }
 
-        ZMQConfiguration<ZMQAppender<E>> config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger);
+        ZMQConfiguration<ZMQAppender<E>> config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger,
+                                                                         peerPublicKey, privateKeyFile, publicKey);
         publisher = new Publisher("Log4JZMQPublishingThread", this, config);
         setOutputStream(new ZMQOutputStream());
         super.start();
