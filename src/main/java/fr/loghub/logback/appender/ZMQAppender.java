@@ -64,6 +64,8 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
     public String privateKeyFile;
     @Getter @Setter
     public String publicKey;
+    @Getter @Setter
+    public int timeout;
     private Publisher publisher;
 
     /**

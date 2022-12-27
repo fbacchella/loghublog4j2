@@ -31,6 +31,8 @@ public class ZMQAppender extends SerializerAppender implements Logger {
     public String privateKeyFile;
     @Getter @Setter
     public String publicKey;
+    @Getter @Setter
+    public int timeout;
     private Publisher publisher;
 
     @Override
@@ -40,7 +42,7 @@ public class ZMQAppender extends SerializerAppender implements Logger {
             return;
         }
         ZMQConfiguration<ZMQAppender> config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger,
-                                                         peerPublicKey, privateKeyFile, publicKey);
+                                                         peerPublicKey, privateKeyFile, publicKey, timeout);
         publisher = new Publisher("Log4J1ZMQPublishingThread", this, config);
     }
 
