@@ -64,8 +64,7 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
     public String privateKeyFile;
     @Getter @Setter
     public String publicKey;
-    @Getter @Setter
-    public int timeout;
+
     private Publisher publisher;
 
     /**
@@ -111,7 +110,7 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
         }
 
         ZMQConfiguration<ZMQAppender<E>> config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger,
-                                                                         peerPublicKey, privateKeyFile, publicKey, timeout);
+                                                                         peerPublicKey, privateKeyFile, publicKey);
         publisher = new Publisher("Log4JZMQPublishingThread", this, config);
         setOutputStream(new ZMQOutputStream());
         super.start();

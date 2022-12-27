@@ -51,9 +51,6 @@ public class ZMQAppender extends AbstractAppender {
         @PluginBuilderAttribute("publicKey")
         public String publicKey;
 
-        @PluginBuilderAttribute("timeout")
-        public int timeout;
-
         @Override
         public ZMQAppender build() {
             return new ZMQAppender(this);
@@ -69,8 +66,7 @@ public class ZMQAppender extends AbstractAppender {
                                           linger,
                                           peerPublicKey,
                                           privateKeyFile,
-                                          publicKey,
-                                          timeout);
+                                          publicKey);
         }
 
     }

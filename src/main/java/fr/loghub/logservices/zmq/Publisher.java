@@ -159,7 +159,6 @@ public class Publisher extends Thread {
             socket = ctx.createSocket(config.type);
             socket.setRcvHWM(config.hwm);
             socket.setSndHWM(config.hwm);
-            socket.setSendTimeOut(config.timeout);
             String url = config.endpoint + ":" + config.type.toString() + ":" + config.method.getSymbol();
             socket.setIdentity(url.getBytes());
             curveConfigurator.run();

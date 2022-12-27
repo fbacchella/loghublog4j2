@@ -8,6 +8,7 @@ import lombok.NonNull;
 
 @Data
 public class ZMQConfiguration<C> {
+
     @Getter @NonNull
     final C context;
     @Getter @NonNull
@@ -28,7 +29,5 @@ public class ZMQConfiguration<C> {
     public final String privateKeyFile;
     @Getter
     public final String publicKey;
-    @Getter
-    public final int timeout;
 
 }
