@@ -17,9 +17,6 @@ public final class FieldsName {
     public static final String LOCATIONINFO_METHODNAME = "method";
     public static final String LOCATIONINFO_LINENUMBER = "line";
     public static final String THROWN = "thrown";
-    public static final String THROWN_MESSAGE = "message";
-    public static final String THROWN_NAME = "name";
-    public static final String THROWN_EXTENDEDSTACKTRACE = "extended_stack_trace";
     public static final String CONTEXTSTACK = "context_stack";
     public static final String CONTEXTDATA = "context_map";
     public static final String MARKERS = "markers";

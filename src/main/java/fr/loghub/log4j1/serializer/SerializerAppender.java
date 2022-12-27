@@ -65,7 +65,7 @@ public abstract class SerializerAppender extends AppenderSkeleton {
         // The event is copied, because a host field is added in the properties
         LoggingEvent modifiedEvent = new LoggingEvent(event.getFQNOfLoggerClass(), event.getLogger(), event.getTimeStamp(), event.getLevel(), event.getMessage(),
                 event.getThreadName(), event.getThrowableInformation(), event.getNDC(),
-                locationInfo ? event.getLocationInformation() : null, new HashMap<String,String>(eventProps));
+                locationInfo ? event.getLocationInformation() : null, new HashMap<>(eventProps));
 
         if (application != null) {
             modifiedEvent.setProperty("application", application);

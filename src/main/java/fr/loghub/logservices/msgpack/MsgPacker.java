@@ -109,7 +109,7 @@ public class MsgPacker extends HashMap<Value, Value> implements AutoCloseable {
 
     private <V> void store(String k, V v, Function<V, Value> mapper) {
         Objects.requireNonNull(k);
-        put(ValueFactory.newString(k), Optional.ofNullable(v).map(mapper::apply).orElse(ValueFactory.newNil()));
+        put(ValueFactory.newString(k), Optional.ofNullable(v).map(mapper).orElse(ValueFactory.newNil()));
     }
 
     private byte[] getInstantBytes(Instant timestamp) {

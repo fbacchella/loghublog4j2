@@ -2,8 +2,6 @@ package fr.loghub.logservices.zmq;
 
 import org.zeromq.SocketType;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;

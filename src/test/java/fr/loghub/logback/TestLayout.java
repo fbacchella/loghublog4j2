@@ -62,7 +62,7 @@ public class TestLayout {
         logger.debug("Exception 1", new RuntimeException(new NullPointerException()));
         logger.info(testing, "Message 1");
 
-        do  {
+        do {
             @SuppressWarnings("unchecked")
             Map<String, ?> msg = msgpack.readValue(socket.recv(), Map.class);
             allmessages.add(msg);
@@ -77,7 +77,7 @@ public class TestLayout {
         Assert.assertEquals(MessagePackExtensionType.class, msg1.remove(FieldsName.TIMESTAMP).getClass());
         Assert.assertNotNull(msg1.remove(FieldsName.THROWN));
         Assert.assertEquals("Exception 1", msg1.remove(FieldsName.MESSAGE));
-        Map<?, ?> props1 = (Map)msg1.remove(FieldsName.PROPERTYMAP);
+        Map<?, ?> props1 = (Map) msg1.remove(FieldsName.PROPERTYMAP);
         Assert.assertEquals(3, props1.size());
         Assert.assertEquals("1", props1.get("name1"));
         Assert.assertEquals("2", props1.get("name2"));
@@ -91,7 +91,7 @@ public class TestLayout {
         Assert.assertEquals("INFO", msg2.remove(FieldsName.LEVEL));
         Assert.assertNull(msg2.remove(FieldsName.THROWN));
         Assert.assertEquals("Message 1", msg2.remove(FieldsName.MESSAGE));
-        Map<?, ?> props2 = (Map)msg2.remove(FieldsName.PROPERTYMAP);
+        Map<?, ?> props2 = (Map) msg2.remove(FieldsName.PROPERTYMAP);
         Assert.assertEquals(3, props2.size());
         Assert.assertEquals("1", props2.get("name1"));
         Assert.assertEquals("2", props2.get("name2"));

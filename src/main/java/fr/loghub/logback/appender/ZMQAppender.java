@@ -21,7 +21,7 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
         @Override
         public void write(byte[] content) {
             if (!publisher.getLogQueue().offer(content)) {
-                addError("Log event lost");
+                addWarn("Log event lost");
             }
         }
 
@@ -111,7 +111,7 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
         }
 
         ZMQConfiguration<ZMQAppender<E>> config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger,
-                                                                         peerPublicKey, privateKeyFile, publicKey);
+                                                                         peerPublicKey, privateKeyFile, publicKey, timeout);
         publisher = new Publisher("Log4JZMQPublishingThread", this, config);
         setOutputStream(new ZMQOutputStream());
         super.start();
