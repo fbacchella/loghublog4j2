@@ -17,12 +17,12 @@ import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.zeromq.SocketType;
 import org.zeromq.ZConfig;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
-import org.zeromq.ZMQ.Socket;
 
 import com.neilalexander.jnacl.crypto.curve25519;
 import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;
@@ -36,19 +36,19 @@ import lombok.Getter;
 public class Publisher extends Thread {
 
     static class NaClServices {
-        private static final Provider provider;
-        private static final KeyPairGenerator generator;
-        private static final KeyFactory kf;
-        static {
+        private final KeyPairGenerator generator;
+        private final KeyFactory kf;
+
+        NaClServices() {
             try {
-                provider = new NaclProvider();
+                Provider provider = new NaclProvider();
                 generator = KeyPairGenerator.getInstance(NaclProvider.NAME, provider);
                 kf = KeyFactory.getInstance(NaclProvider.NAME, provider);
             } catch (NoSuchAlgorithmException e) {
                 throw new IllegalStateException(e);
             }
         }
-        static byte[] readPrivateKey(String path) {
+        byte[] readPrivateKey(String path) {
             try {
                 byte[] key = Files.readAllBytes(Paths.get(path));
                 PKCS8EncodedKeySpec encoded = new PKCS8EncodedKeySpec(key);
@@ -59,19 +59,24 @@ public class Publisher extends Thread {
                 throw new IllegalArgumentException(ex);
             }
         }
-        static byte[] writePair(String privatePath) {
+        byte[] writePair(String privatePath) {
+            Pattern filePattern = Pattern.compile("(.*?)(\\.[a-zA-Z0-9]+)?$");
+            Matcher m = filePattern.matcher(privatePath);
+            m.matches();
+            String fileRadix = m.group(1);
+            String fileExtension = m.group(2) != null ? m.group(2) : ".p8";
             try {
                 generator.initialize(256);
                 KeyPair kp = generator.generateKeyPair();
                 PrivateKey pv = kp.getPrivate();
-                Files.write(Paths.get(privatePath), pv.getEncoded());
+                Files.write(Paths.get(fileRadix + fileExtension), pv.getEncoded());
 
                 PublicKey pb = kp.getPublic();
                 NaclPublicKeySpec naclpubspec = kf.getKeySpec(pb, NaclPublicKeySpec.class);
 
                 ZConfig zconf = new ZConfig("root", null);
                 zconf.putValue("curve/public-key", ZMQ.Curve.z85Encode(naclpubspec.getBytes()));
-                zconf.save(privatePath.replace(".p8", ".zpl"));
+                zconf.save(fileRadix + ".zpl");
                 return naclpubspec.getBytes();
             } catch (IOException | InvalidKeySpecException ex) {
                 throw new IllegalArgumentException(ex);
@@ -81,16 +86,18 @@ public class Publisher extends Thread {
 
     private ZMQ.Socket socket;
     private final ZContext ctx;
-    private final ZMQConfiguration config;
+    private final ZMQConfiguration<?> config;
     @Getter
     private final BlockingQueue<byte[]> logQueue;
     private volatile boolean closed;
     private final Logger logger;
+    private final Runnable curveConfigurator;
 
-    public Publisher(String name, Logger logger, ZMQConfiguration config) {
+    public Publisher(String name, Logger logger, ZMQConfiguration<?> config) {
         ctx = new ZContext(1);
         ctx.setLinger(0);
         this.config = config;
+        this.curveConfigurator = getCurveConfigurator();
         this.logger = logger;
         logQueue = new ArrayBlockingQueue<>(config.getHwm());
         setName(name);
@@ -100,67 +107,80 @@ public class Publisher extends Thread {
         start();
     }
 
+    private Runnable getCurveConfigurator() {
+        if (config.privateKeyFile != null && ! config.privateKeyFile.isEmpty()) {
+            NaClServices nacl = new NaClServices();
+            byte[] publicKey = (config.publicKey != null && ! config.publicKey.isEmpty()) ?
+                                       ZMQ.Curve.z85Decode(config.publicKey) : null;
+            if (! Files.exists(Paths.get(config.privateKeyFile))) {
+                publicKey = nacl.writePair(config.privateKeyFile);
+            }
+            byte[] secretKey = nacl.readPrivateKey(config.privateKeyFile);
+            if (publicKey == null) {
+                publicKey = new byte[curve25519xsalsa20poly1305.crypto_secretbox_PUBLICKEYBYTES];
+                curve25519.crypto_scalarmult_base(publicKey, secretKey);
+            }
+            byte[] publicKeyFinal = publicKey;
+            byte[] peerKey = config.peerPublicKey != null && ! config.peerPublicKey.isEmpty() ?
+                                     ZMQ.Curve.z85Decode(config.peerPublicKey) : null;
+            return () -> {
+                socket.setCurveSecretKey(secretKey);
+                socket.setCurvePublicKey(publicKeyFinal);
+                if (peerKey != null) {
+                    socket.setCurveServerKey(peerKey);
+                }
+            };
+        } else {
+            return () -> {};
+        }
+
+    }
+
     @Override
     public void run() {
         try {
             while (! closed) {
-                // First check if socket is null.
-                // It might be the first iteration, or the previous socket badly failed and was dropped
-                synchronized (this) {
-                    if (socket == null) {
-                        socket = newSocket(config.getMethod(), config.getType(), config.getEndpoint(), config.getHwm(), -1);
-                        if (socket == null) {
-                            // No socket returned, appender was closed
-                            break;
-                        }
-                        if (config.peerPublicKey != null && ! config.peerPublicKey.isEmpty()) {
-                            socket.setCurveServerKey(ZMQ.Curve.z85Decode(config.peerPublicKey));
-                        }
-                        byte[] publicKey = (config.publicKey != null && ! config.publicKey.isEmpty()) ? ZMQ.Curve.z85Decode(config.publicKey) : null;
-                        if (config.privateKeyFile != null && ! config.privateKeyFile.isEmpty()) {
-                            if (! Files.exists(Paths.get(config.privateKeyFile))) {
-                                publicKey = NaClServices.writePair(config.privateKeyFile);
-                            }
-                            byte[] secretKey = NaClServices.readPrivateKey(config.privateKeyFile);
-                            socket.setCurveSecretKey(secretKey);
-                            if (publicKey == null) {
-                                publicKey = new byte[curve25519xsalsa20poly1305.crypto_secretbox_PUBLICKEYBYTES];
-                                curve25519.crypto_scalarmult_base(publicKey, secretKey);
-                            }
-                        }
-                        if (publicKey != null) {
-                            socket.setCurvePublicKey(publicKey);
-                        }
-                        Optional.of(config.getMaxMsgSize()).filter(i -> i > 0).ifPresent(socket::setMaxMsgSize);
-                        Optional.of(config.getLinger()).filter(i -> i > 0).ifPresent(socket::setLinger);
-                    }
-                }
-                // Not a blocking wait, it allows to test if closed every 100 ms
+                refreshSocket();
+                 // Not a blocking wait, it allows to test if closed every 100 ms
                 // Needed because interrupt deactivated for this thread
                 byte[] log = logQueue.poll(100, TimeUnit.MILLISECONDS);
-                if (log != null) {
-                    try {
-                        synchronized (this) {
-                            if (!closed) {
-                                socket.send(log, zmq.ZMQ.ZMQ_DONTWAIT);
-                            }
-                        }
-                    } catch (zmq.ZError.IOException | java.nio.channels.ClosedSelectorException | org.zeromq.ZMQException e) {
-                        synchronized (this) {
-                            // If it's not closed, drop the socket, to recreate a new one
-                            if (!closed) {
-                                socket.close();
-                                socket = null;
-                            }
-                        }
-                        logger.warn(() -> String.format("Failed ZMQ connection %s: %s", config.getEndpoint(), e.getMessage()), e);
-                    }
-                }
+                sendData(log);
             }
         } catch (InterruptedException e) {
-            // Interrupt deactivated, so never happens
+            // End of processing
         }
         close();
+    }
+
+    private synchronized void refreshSocket() throws InterruptedException {
+        if (closed || ctx.isClosed()) {
+            throw new InterruptedException();
+        } else if (socket == null) {
+            socket = ctx.createSocket(config.type);
+            socket.setRcvHWM(config.hwm);
+            socket.setSndHWM(config.hwm);
+            String url = config.endpoint + ":" + config.type.toString() + ":" + config.method.getSymbol();
+            socket.setIdentity(url.getBytes());
+            curveConfigurator.run();
+            Optional.of(config.getMaxMsgSize()).filter(i -> i > 0).ifPresent(socket::setMaxMsgSize);
+            Optional.of(config.getLinger()).filter(i -> i > 0).ifPresent(socket::setLinger);
+            config.method.act(socket, config.endpoint);
+        }
+    }
+
+    private synchronized void sendData(byte[] log) {
+        if (log != null && !closed) {
+            try {
+                socket.send(log, zmq.ZMQ.ZMQ_DONTWAIT);
+            } catch (zmq.ZError.IOException | java.nio.channels.ClosedSelectorException | org.zeromq.ZMQException e) {
+                // If it's not closed, drop the socket, to recreate a new one
+                if (!closed) {
+                    socket.close();
+                    socket = null;
+                }
+                logger.warn(() -> String.format("Failed ZMQ connection %s: %s", config.getEndpoint(), e.getMessage()), e);
+            }
+        }
     }
 
     /* Don't interrupt a ZMQ thread, just finished it
@@ -181,24 +201,10 @@ public class Publisher extends Thread {
         ctx.destroy();
     }
 
-    private synchronized Socket newSocket(Method method, SocketType type, String endpoint, int hwm, int timeout) {
-        if (closed || ctx.isClosed()) {
-            return null;
-        } else {
-            Socket newsocket = ctx.createSocket(type);
-            newsocket.setRcvHWM(hwm);
-            newsocket.setSndHWM(hwm);
-            newsocket.setSendTimeOut(timeout);
-            newsocket.setReceiveTimeOut(timeout);
-
-            method.act(newsocket, endpoint);
-            String url = endpoint + ":" + type.toString() + ":" + method.getSymbol();
-            newsocket.setIdentity(url.getBytes());
-            return newsocket;
-        }
-    }
-
     private void exceptionHandler(Thread t, Throwable ex) {
         logger.error(() -> "Critical exception: " + ex.getMessage(), ex);
+        socket.close();
+        socket = null;
     }
+
 }
