@@ -1,7 +1,9 @@
 package fr.loghub.logservices.zmq;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -13,6 +15,7 @@ import java.security.Provider;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -62,18 +65,26 @@ public class Publisher extends Thread {
         byte[] writePair(String privatePath) {
             Pattern filePattern = Pattern.compile("(.*?)(\\.[a-zA-Z0-9]+)?$");
             Matcher m = filePattern.matcher(privatePath);
-            m.matches();
+            if (! m.matches()) {
+                throw new IllegalArgumentException("Invalid file path for the curve secret key: " + privatePath);
+            }
             String fileRadix = m.group(1);
             String fileExtension = m.group(2) != null ? m.group(2) : ".p8";
+            Path privateKeyPath = Paths.get(fileRadix + fileExtension);
             try {
                 generator.initialize(256);
                 KeyPair kp = generator.generateKeyPair();
                 PrivateKey pv = kp.getPrivate();
-                Files.write(Paths.get(fileRadix + fileExtension), pv.getEncoded());
+                Files.write(privateKeyPath, pv.getEncoded());
 
                 PublicKey pb = kp.getPublic();
                 NaclPublicKeySpec naclpubspec = kf.getKeySpec(pb, NaclPublicKeySpec.class);
 
+                // Building the pub file
+                String publicEncoded = String.format("Curve %s%n", Base64.getEncoder().encodeToString(naclpubspec.getBytes()));
+                Files.write(Paths.get(fileRadix + ".pub"), publicEncoded.getBytes(StandardCharsets.US_ASCII));
+
+                // Building the zpl file
                 ZConfig zconf = new ZConfig("root", null);
                 zconf.putValue("curve/public-key", ZMQ.Curve.z85Encode(naclpubspec.getBytes()));
                 zconf.save(fileRadix + ".zpl");
@@ -111,7 +122,7 @@ public class Publisher extends Thread {
         if (config.privateKeyFile != null && ! config.privateKeyFile.isEmpty()) {
             NaClServices nacl = new NaClServices();
             byte[] publicKey = (config.publicKey != null && ! config.publicKey.isEmpty()) ?
-                                       ZMQ.Curve.z85Decode(config.publicKey) : null;
+                                       Base64.getDecoder().decode(config.publicKey) : null;
             if (! Files.exists(Paths.get(config.privateKeyFile))) {
                 publicKey = nacl.writePair(config.privateKeyFile);
             }
@@ -121,8 +132,7 @@ public class Publisher extends Thread {
                 curve25519.crypto_scalarmult_base(publicKey, secretKey);
             }
             byte[] publicKeyFinal = publicKey;
-            byte[] peerKey = config.peerPublicKey != null && ! config.peerPublicKey.isEmpty() ?
-                                     ZMQ.Curve.z85Decode(config.peerPublicKey) : null;
+            byte[] peerKey = config.peerPublicKey != null && ! config.peerPublicKey.isEmpty() ? Base64.getDecoder().decode(config.peerPublicKey) : null;
             return () -> {
                 socket.setCurveSecretKey(secretKey);
                 socket.setCurvePublicKey(publicKeyFinal);

@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.function.Supplier;
 
 import org.junit.Assert;
@@ -46,7 +47,7 @@ public class TestCurve {
             socket.setCurveSecretKey(serverSecretKey);
             socket.setCurvePublicKey(serverPublicKey);
             socket.setCurveServer(true);
-            String serverPublicKeyString = ZMQ.Curve.z85Encode(serverPublicKey);
+            String serverPublicKeyString = Base64.getEncoder().encodeToString(serverPublicKey);
             ZMQConfiguration<?> configuration = new ZMQConfiguration<>(this, "tcp://127.0.0.1:" + port,
                     SocketType.PUSH, Method.CONNECT, 100, 1024, 1, serverPublicKeyString, clientKeyPath, null);
             Publisher pub = new Publisher("testcurve", logger, configuration);
