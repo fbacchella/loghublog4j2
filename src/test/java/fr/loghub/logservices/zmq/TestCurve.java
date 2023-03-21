@@ -49,7 +49,7 @@ public class TestCurve {
             socket.setCurveServer(true);
             String serverPublicKeyString = Base64.getEncoder().encodeToString(serverPublicKey);
             ZMQConfiguration<?> configuration = new ZMQConfiguration<>(this, "tcp://127.0.0.1:" + port,
-                    SocketType.PUSH, Method.CONNECT, 100, 1024, 1, serverPublicKeyString, clientKeyPath, null);
+                    SocketType.PUSH, Method.CONNECT, 100, 1024, 1, serverPublicKeyString, clientKeyPath, null, true);
             Publisher pub = new Publisher("testcurve", logger, configuration);
             Assert.assertTrue(pub.getLogQueue().offer("hello".getBytes(StandardCharsets.UTF_8)));
             Assert.assertEquals("hello", socket.recvStr());

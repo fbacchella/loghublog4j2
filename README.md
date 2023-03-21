@@ -18,10 +18,14 @@ There is a pseudo appender, that put a listener on GC JMX events and log them.
     * hwm: the HWM for the socket, default to 1000.
     * maxMsgSize
     * linger
+    * peerPublicKey
+    * privateKeyFile
+    * publicKey
+    * autoCreate: auto create of the 0MQ curve settings. Can be overridden by the system property `fr.loghub.zmq.curveAutoCreate`
 
 ## GCAppender
 
-Every GC event is logged using the configured level, and the the logger used is the concatenation of parent and GC name.
+Every GC event is logged using the configured level, and the logger used is the concatenation of parent and GC name.
 
   * Parameters
     * level: the log4j2 log level to be usedn.
@@ -206,4 +210,3 @@ A example of GC log sent:
     }
   }
 ```
-

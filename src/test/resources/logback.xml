@@ -7,6 +7,7 @@
         <type>push</type>
         <method>connect</method>
         <hwm>1000</hwm>
+        <autoCreate>true</autoCreate>
         <encoder class="fr.loghub.logback.encoder.msgpack.MsgPackEncoder">
             <additionalField>
                 <name>name1</name>

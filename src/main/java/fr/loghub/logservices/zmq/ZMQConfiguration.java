@@ -29,5 +29,7 @@ public class ZMQConfiguration<C> {
     public final String privateKeyFile;
     @Getter
     public final String publicKey;
+    @Getter
+    public final boolean autoCreate;
 
 }

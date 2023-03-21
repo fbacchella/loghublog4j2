@@ -119,12 +119,20 @@ public class Publisher extends Thread {
     }
 
     private Runnable getCurveConfigurator() {
+        boolean autoCreate = Optional.ofNullable(System.getProperty("fr.loghub.zmq.curveAutoCreate"))
+                                     .map(Boolean::valueOf)
+                                     .orElse(config.autoCreate);
+
         if (config.privateKeyFile != null && ! config.privateKeyFile.isEmpty()) {
             NaClServices nacl = new NaClServices();
             byte[] publicKey = (config.publicKey != null && ! config.publicKey.isEmpty()) ?
                                        Base64.getDecoder().decode(config.publicKey) : null;
-            if (! Files.exists(Paths.get(config.privateKeyFile))) {
+            Path privateKeyPath = Paths.get(config.privateKeyFile);
+            if (! Files.exists(privateKeyPath) && autoCreate) {
                 publicKey = nacl.writePair(config.privateKeyFile);
+            }
+            if (! Files.exists(privateKeyPath)) {
+                throw new IllegalStateException(String.format("ZMQ private key %s file missing", config.privateKeyFile));
             }
             byte[] secretKey = nacl.readPrivateKey(config.privateKeyFile);
             if (publicKey == null) {

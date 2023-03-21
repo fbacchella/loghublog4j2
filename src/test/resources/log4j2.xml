@@ -6,6 +6,7 @@
             <type>push</type>
             <method>connect</method>
             <hwm>1000</hwm>
+            <autoCreate>true</autoCreate>
             <MsgPackLayout>
                 <AdditionalField name="a">1</AdditionalField>
                 <AdditionalField name="b">${sys:fr.loghub.log4j2.test.port}</AdditionalField>
