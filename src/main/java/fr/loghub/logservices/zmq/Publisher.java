@@ -166,6 +166,7 @@ public class Publisher extends Thread {
             }
         } catch (InterruptedException e) {
             // End of processing
+            Thread.currentThread().interrupt();
         }
         close();
     }
