@@ -119,22 +119,26 @@ public class Publisher extends Thread {
     }
 
     private Runnable getCurveConfigurator() {
-        boolean autoCreate = Optional.ofNullable(System.getProperty("fr.loghub.zmq.curveAutoCreate"))
+        boolean autoCreate = Optional.ofNullable(System.getProperty("fr.loghub.zmq.curve.autoCreate"))
                                      .map(Boolean::valueOf)
                                      .orElse(config.autoCreate);
-
-        if (config.privateKeyFile != null && ! config.privateKeyFile.isEmpty()) {
+        String privateKeyFile = Optional.ofNullable(System.getProperty("fr.loghub.zmq.curve.privateKeyPath"))
+                                        .orElse(config.privateKeyFile);
+        if (privateKeyFile != null && ! privateKeyFile.isEmpty()) {
             NaClServices nacl = new NaClServices();
-            byte[] publicKey = (config.publicKey != null && ! config.publicKey.isEmpty()) ?
-                                       Base64.getDecoder().decode(config.publicKey) : null;
-            Path privateKeyPath = Paths.get(config.privateKeyFile);
+            byte[] publicKey;
+            Path privateKeyPath = Paths.get(privateKeyFile);
             if (! Files.exists(privateKeyPath) && autoCreate) {
-                publicKey = nacl.writePair(config.privateKeyFile);
+                publicKey = nacl.writePair(privateKeyFile);
+            } else if (config.publicKey != null && ! config.publicKey.isEmpty()) {
+                publicKey = Base64.getDecoder().decode(config.publicKey);
+            } else {
+                publicKey = null;
             }
             if (! Files.exists(privateKeyPath)) {
-                throw new IllegalStateException(String.format("ZMQ private key %s file missing", config.privateKeyFile));
+                throw new IllegalStateException(String.format("ZMQ private key %s file missing", privateKeyFile));
             }
-            byte[] secretKey = nacl.readPrivateKey(config.privateKeyFile);
+            byte[] secretKey = nacl.readPrivateKey(privateKeyFile);
             if (publicKey == null) {
                 publicKey = new byte[curve25519xsalsa20poly1305.crypto_secretbox_PUBLICKEYBYTES];
                 curve25519.crypto_scalarmult_base(publicKey, secretKey);
@@ -151,7 +155,6 @@ public class Publisher extends Thread {
         } else {
             return () -> {};
         }
-
     }
 
     @Override
