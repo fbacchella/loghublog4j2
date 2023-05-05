@@ -38,6 +38,9 @@ import lombok.Getter;
 
 public class Publisher extends Thread {
 
+    public static final String PROPERTY_PRIVATEKEYFILE = "fr.loghub.logging.zmq.curve.privateKeyFile";
+    public static final String PROPERTY_AUTOCREATE = "fr.loghub.logging.zmq.curve.autoCreate";
+
     static class NaClServices {
         private final KeyPairGenerator generator;
         private final KeyFactory kf;
@@ -119,10 +122,10 @@ public class Publisher extends Thread {
     }
 
     private Runnable getCurveConfigurator() {
-        boolean autoCreate = Optional.ofNullable(System.getProperty("fr.loghub.zmq.curve.autoCreate"))
+        boolean autoCreate = Optional.ofNullable(System.getProperty(PROPERTY_AUTOCREATE))
                                      .map(Boolean::valueOf)
                                      .orElse(config.autoCreate);
-        String privateKeyFile = Optional.ofNullable(System.getProperty("fr.loghub.zmq.curve.privateKeyPath"))
+        String privateKeyFile = Optional.ofNullable(System.getProperty(PROPERTY_PRIVATEKEYFILE))
                                         .orElse(config.privateKeyFile);
         if (privateKeyFile != null && ! privateKeyFile.isEmpty()) {
             NaClServices nacl = new NaClServices();

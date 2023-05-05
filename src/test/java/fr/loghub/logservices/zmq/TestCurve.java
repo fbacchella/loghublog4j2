@@ -91,8 +91,8 @@ public class TestCurve {
             }
         };
         Publisher pub = new Publisher("testpublisher", customLogger, config);
-        System.clearProperty("fr.loghub.zmq.curve.autoCreate");
-        System.clearProperty("fr.loghub.zmq.curve.privateKeyPath");
+        System.clearProperty(Publisher.PROPERTY_AUTOCREATE);
+        System.clearProperty(Publisher.PROPERTY_PRIVATEKEYFILE);
         Thread.sleep(100);
         pub.close();
         pub.join(100);
@@ -102,8 +102,8 @@ public class TestCurve {
     @Test
     public void testAutoCreateProps() throws InterruptedException {
         Path privateKeyFile = testFolder.getRoot().toPath().resolve("curve.p8");
-        System.setProperty("fr.loghub.zmq.curve.autoCreate", "true");
-        System.setProperty("fr.loghub.zmq.curve.privateKeyPath", privateKeyFile.toString());
+        System.setProperty(Publisher.PROPERTY_AUTOCREATE, "true");
+        System.setProperty(Publisher.PROPERTY_PRIVATEKEYFILE, privateKeyFile.toString());
         ZMQConfiguration config = new ZMQConfiguration<>(this, "tcp://localhost:0", SocketType.PULL, Method.BIND, 100, 100, 0, null, null, null, false);
         runPublisher(config);
         Assert.assertTrue(Files.exists(privateKeyFile));
@@ -112,8 +112,8 @@ public class TestCurve {
     @Test
     public void testAutoCreateSettings() throws InterruptedException {
         Path privateKeyFile = testFolder.getRoot().toPath().resolve("curve.p8");
-        System.clearProperty("fr.loghub.zmq.curve.autoCreate");
-        System.clearProperty("fr.loghub.zmq.curve.privateKeyPath");
+        System.clearProperty(Publisher.PROPERTY_AUTOCREATE);
+        System.clearProperty(Publisher.PROPERTY_PRIVATEKEYFILE);
         ZMQConfiguration config = new ZMQConfiguration<>(this, "tcp://localhost:0", SocketType.PULL, Method.BIND, 100, 100, 0, null, privateKeyFile.toString(), null, true);
         runPublisher(config);
         Assert.assertTrue(Files.exists(privateKeyFile));
@@ -121,9 +121,9 @@ public class TestCurve {
 
     @Test
     public void testNoAutoCreate() throws InterruptedException {
-        System.setProperty("fr.loghub.zmq.curve.autoCreate", "false");
+        System.setProperty(Publisher.PROPERTY_AUTOCREATE, "false");
         Path privateKeyFile = testFolder.getRoot().toPath().resolve("curve.p8");
-        System.setProperty("fr.loghub.zmq.curve.privateKeyPath", privateKeyFile.toString());
+        System.setProperty(Publisher.PROPERTY_PRIVATEKEYFILE, privateKeyFile.toString());
         ZMQConfiguration config = new ZMQConfiguration<>(this, "tcp://localhost:0", SocketType.PULL, Method.BIND, 100, 100, 0, null, null, null, true);
         IllegalStateException ex = Assert.assertThrows(IllegalStateException.class, () -> runPublisher(config));
         Assert.assertTrue(ex.getMessage().endsWith("file missing"));

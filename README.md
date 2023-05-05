@@ -16,12 +16,12 @@ There is a pseudo appender, that put a listener on GC JMX events and log them.
     * type: the socket type, either `PUB` or `PUSH`, default to `PUB`.
     * method: the socket connection method, either `connect` or `bind`, default to `connect`.
     * hwm: the HWM for the socket, default to 1000.
-    * maxMsgSize
-    * linger
-    * peerPublicKey
-    * privateKeyFile
-    * publicKey
-    * autoCreate: auto create of the 0MQ curve settings. Can be overridden by the system property `fr.loghub.zmq.curveAutoCreate`
+    * maxMsgSize.
+    * linger.
+    * peerPublicKey, the Base64 encoded public key of the end point.
+    * privateKeyFile, the path to the private key file, encoded using PKCS#8. Can be overridden by the system property `fr.loghub.logging.zmq.curve.privateKeyFile`.
+    * publicKey, the public key, that can be found in the `.pub` file after creation of the key.
+    * autoCreate: auto create of the 0MQ curve settings. Can be overridden by the system property `fr.loghub.logging.zmq.curve.autoCreate`.
 
 ## GCAppender
 
@@ -37,7 +37,31 @@ Every GC event is logged using the configured level, and the logger used is the 
     * locationInfo: rue of false, it will send or not the log event location (file, line, method), default to false.
     * additionalFields: a list of additional field to unconditionaly add to message.
 
-## Complete Exemple
+
+## Configuring the ZMQ curve key.
+
+For enhanced security, it’s possible to encrypt ZMQ connexion using Curve.
+
+The ZMQ appender can automatically handle creation of the key. The best way is to start once the application with the
+following system property set:
+
+- `fr.loghub.logging.zmq.curve.privateKeyFile` indicating the ZMQ file path, the extension is optional.
+- `fr.loghub.logging.zmq.curve.autoCreate` set to true to allow the creation of the file.
+
+Once the application is started, 3 files are created.
+
+The first one ends with `.p8` if no extension is given. It contains the private part of the curve key, encoded as a p8
+file. The default OID for the key type is 1.3.6.4.1.2, but can be overridden by using the system property fr.loghub.nacl.oid.
+
+The second one ends with `.pub`. It encodes the public part of the curve key in Base64, prefixed by the string 'Curve '.
+
+The third ends with `.zpl`. It encodes the public part of the curve key using the [ZPL format](https://rfc.zeromq.org/spec/4/)
+using the hierarchical name `curve.public-key`.
+
+Once it’s done, the path of private key should be defined in the property `privateKeyFile` and the base64-encoded public
+key defined in the property `publicKey`.
+
+## Complete Example
 
 In this exemple, the listening port of a ZMQ handler is defined using the java property `fr.loghub.log4j2.zmq.port`
 
