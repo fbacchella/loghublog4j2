@@ -25,7 +25,6 @@ import org.zeromq.ZMQ.Socket;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ch.qos.logback.classic.LoggerContext;
 import zmq.ZMQ;
 
 public class TestLayout {
