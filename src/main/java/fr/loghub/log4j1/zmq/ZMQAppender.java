@@ -9,12 +9,13 @@ import org.zeromq.SocketType;
 import fr.loghub.log4j1.serializer.SerializerAppender;
 import fr.loghub.logservices.zmq.Logger;
 import fr.loghub.logservices.zmq.Method;
-import fr.loghub.logservices.zmq.Publisher;
+import fr.loghub.logservices.zmq.AsynchronousPublisher;
 import fr.loghub.logservices.zmq.ZMQConfiguration;
 import lombok.Getter;
 import lombok.Setter;
 
 public class ZMQAppender extends SerializerAppender implements Logger {
+
     private SocketType type = SocketType.PUB;
     private Method method = Method.CONNECT;
     @Getter @Setter
@@ -34,7 +35,7 @@ public class ZMQAppender extends SerializerAppender implements Logger {
     @Getter @Setter
     public boolean autoCreate;
 
-    private Publisher publisher;
+    private AsynchronousPublisher publisher;
 
     @Override
     protected void subOptions() {
@@ -44,12 +45,12 @@ public class ZMQAppender extends SerializerAppender implements Logger {
         }
         ZMQConfiguration<ZMQAppender> config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger,
                                                          peerPublicKey, privateKeyFile, publicKey, autoCreate);
-        publisher = new Publisher("Log4J1ZMQPublishingThread", this, config);
+        publisher = new AsynchronousPublisher("Log4J1ZMQPublishingThread", this, config);
     }
 
     @Override
     protected void send(byte[] content) {
-        if (!publisher.getLogQueue().offer(content)) {
+        if (!publisher.send(content)) {
             errorHandler.error("Log event lost");
         }
     }
@@ -103,4 +104,5 @@ public class ZMQAppender extends SerializerAppender implements Logger {
     public void error(Supplier<String> message, Throwable ex) {
         errorHandler.error(message.get());
     }
+
 }

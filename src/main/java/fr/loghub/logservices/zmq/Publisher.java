@@ -17,9 +17,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.Optional;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +33,7 @@ import fr.loghub.naclprovider.NaclProvider;
 import fr.loghub.naclprovider.NaclPublicKeySpec;
 import lombok.Getter;
 
-public class Publisher extends Thread {
+public class Publisher {
 
     public static final String PROPERTY_PRIVATEKEYFILE = "fr.loghub.logging.zmq.curve.privateKeyFile";
     public static final String PROPERTY_AUTOCREATE = "fr.loghub.logging.zmq.curve.autoCreate";
@@ -102,23 +99,16 @@ public class Publisher extends Thread {
     private final ZContext ctx;
     private final ZMQConfiguration<?> config;
     @Getter
-    private final BlockingQueue<byte[]> logQueue;
     private volatile boolean closed;
     private final Logger logger;
     private final Runnable curveConfigurator;
 
-    public Publisher(String name, Logger logger, ZMQConfiguration<?> config) {
+    public Publisher(Logger logger, ZMQConfiguration<?> config) {
         ctx = new ZContext(1);
         ctx.setLinger(0);
         this.config = config;
         this.curveConfigurator = getCurveConfigurator();
         this.logger = logger;
-        logQueue = new ArrayBlockingQueue<>(config.getHwm());
-        setName(name);
-        setDaemon(true);
-        setUncaughtExceptionHandler(this::exceptionHandler);
-        closed = false;
-        start();
     }
 
     private Runnable getCurveConfigurator() {
@@ -160,24 +150,7 @@ public class Publisher extends Thread {
         }
     }
 
-    @Override
-    public void run() {
-        try {
-            while (! closed) {
-                refreshSocket();
-                 // Not a blocking wait, it allows to test if closed every 100 ms
-                // Needed because interrupt deactivated for this thread
-                byte[] log = logQueue.poll(100, TimeUnit.MILLISECONDS);
-                sendData(log);
-            }
-        } catch (InterruptedException e) {
-            // End of processing
-            Thread.currentThread().interrupt();
-        }
-        close();
-    }
-
-    private synchronized void refreshSocket() throws InterruptedException {
+    synchronized void refreshSocket() throws InterruptedException {
         if (closed || ctx.isClosed()) {
             throw new InterruptedException();
         } else if (socket == null) {
@@ -193,7 +166,7 @@ public class Publisher extends Thread {
         }
     }
 
-    private synchronized void sendData(byte[] log) {
+    public synchronized void sendData(byte[] log) {
         if (log != null && !closed) {
             try {
                 socket.send(log, zmq.ZMQ.ZMQ_DONTWAIT);
@@ -208,14 +181,6 @@ public class Publisher extends Thread {
         }
     }
 
-    /* Don't interrupt a ZMQ thread, just finished it
-     * @see java.lang.Thread#interrupt()
-     */
-    @Override
-    public synchronized void interrupt() {
-        closed = true;
-    }
-
     public synchronized void close() {
         if (closed) {
             return;
@@ -224,12 +189,6 @@ public class Publisher extends Thread {
         socket.close();
         socket = null;
         ctx.destroy();
-    }
-
-    private void exceptionHandler(Thread t, Throwable ex) {
-        logger.error(() -> "Critical exception: " + ex.getMessage(), ex);
-        socket.close();
-        socket = null;
     }
 
 }

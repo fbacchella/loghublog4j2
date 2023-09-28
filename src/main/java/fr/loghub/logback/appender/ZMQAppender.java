@@ -10,7 +10,7 @@ import org.zeromq.SocketType;
 import ch.qos.logback.core.OutputStreamAppender;
 import fr.loghub.logservices.zmq.Logger;
 import fr.loghub.logservices.zmq.Method;
-import fr.loghub.logservices.zmq.Publisher;
+import fr.loghub.logservices.zmq.AsynchronousPublisher;
 import fr.loghub.logservices.zmq.ZMQConfiguration;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +20,7 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
     private class ZMQOutputStream extends OutputStream {
         @Override
         public void write(byte[] content) {
-            if (!publisher.getLogQueue().offer(content)) {
+            if (!publisher.send(content)) {
                 addWarn("Log event lost");
             }
         }
@@ -42,7 +42,7 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
 
         @Override
         public void write(int b) {
-            if (publisher.getLogQueue().offer(new byte[]{(byte)b})) {
+            if (! publisher.send(new byte[]{(byte)b})) {
                 addError("Log event lost");
             }
         }
@@ -67,7 +67,7 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
     @Getter @Setter
     private boolean autoCreate = true;
 
-    private Publisher publisher;
+    private AsynchronousPublisher publisher;
 
     /**
      * Define the ØMQ socket type. Current allowed value are PUB or PUSH.
@@ -113,7 +113,7 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
 
         ZMQConfiguration<ZMQAppender<E>> config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger,
                                                                          peerPublicKey, privateKeyFile, publicKey, autoCreate);
-        publisher = new Publisher("Log4JZMQPublishingThread", this, config);
+        publisher = new AsynchronousPublisher("Log4JZMQPublishingThread", this, config);
         setOutputStream(new ZMQOutputStream());
         super.start();
     }

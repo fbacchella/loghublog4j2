@@ -52,8 +52,8 @@ public class TestCurve {
             String serverPublicKeyString = Base64.getEncoder().encodeToString(serverPublicKey);
             ZMQConfiguration<?> configuration = new ZMQConfiguration<>(this, "tcp://127.0.0.1:" + port,
                     SocketType.PUSH, Method.CONNECT, 100, 1024, 1, serverPublicKeyString, clientKeyPath, null, true);
-            Publisher pub = new Publisher("testcurve", logger, configuration);
-            Assert.assertTrue(pub.getLogQueue().offer("hello".getBytes(StandardCharsets.UTF_8)));
+            AsynchronousPublisher pub = new AsynchronousPublisher("testcurve", logger, configuration);
+            Assert.assertTrue(pub.send("hello".getBytes(StandardCharsets.UTF_8)));
             Assert.assertEquals("hello", socket.recvStr());
             pub.close();
             ZConfig clientZpl = ZConfig.load(clientKeyPath.replace(".p8", ".zpl"));
@@ -90,7 +90,7 @@ public class TestCurve {
                 messages.add(message.get());
             }
         };
-        Publisher pub = new Publisher("testpublisher", customLogger, config);
+        AsynchronousPublisher pub = new AsynchronousPublisher("testpublisher", customLogger, config);
         System.clearProperty(Publisher.PROPERTY_AUTOCREATE);
         System.clearProperty(Publisher.PROPERTY_PRIVATEKEYFILE);
         Thread.sleep(100);
