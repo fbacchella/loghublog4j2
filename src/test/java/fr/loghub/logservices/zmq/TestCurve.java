@@ -24,7 +24,7 @@ public class TestCurve {
     @Rule
     public TemporaryFolder testFolder = new TemporaryFolder();
 
-    private final Publisher.NaClServices nacl = new Publisher.NaClServices();
+    private final NaClServices nacl = new NaClServices();
 
     @Test(timeout = 2000)
     public void publisher() throws IOException {

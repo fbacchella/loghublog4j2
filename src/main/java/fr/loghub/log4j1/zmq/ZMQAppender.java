@@ -9,7 +9,7 @@ import org.zeromq.SocketType;
 import fr.loghub.log4j1.serializer.SerializerAppender;
 import fr.loghub.logservices.zmq.Logger;
 import fr.loghub.logservices.zmq.Method;
-import fr.loghub.logservices.zmq.AsynchronousPublisher;
+import fr.loghub.logservices.zmq.Publisher;
 import fr.loghub.logservices.zmq.ZMQConfiguration;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +35,7 @@ public class ZMQAppender extends SerializerAppender implements Logger {
     @Getter @Setter
     public boolean autoCreate;
 
-    private AsynchronousPublisher publisher;
+    private Publisher publisher;
 
     @Override
     protected void subOptions() {
@@ -45,7 +45,7 @@ public class ZMQAppender extends SerializerAppender implements Logger {
         }
         ZMQConfiguration<ZMQAppender> config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger,
                                                          peerPublicKey, privateKeyFile, publicKey, autoCreate);
-        publisher = new AsynchronousPublisher("Log4J1ZMQPublishingThread", this, config);
+        publisher = Publisher.asynchronous("Log4J1ZMQPublishingThread", this, config);
     }
 
     @Override

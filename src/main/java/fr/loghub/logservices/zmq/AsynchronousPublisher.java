@@ -4,15 +4,15 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-public class AsynchronousPublisher extends Thread {
+class AsynchronousPublisher extends Thread implements Publisher {
 
     private final BlockingQueue<byte[]> logQueue;
     private volatile boolean running;
-    private final Publisher publisher;
+    private final SynchronousPublisher publisher;
     private final Logger logger;
 
-    public AsynchronousPublisher(String name, Logger logger, ZMQConfiguration<?> config) {
-        publisher = new Publisher(logger, config);
+    AsynchronousPublisher(String name, Logger logger, ZMQConfiguration<?> config) {
+        publisher = new SynchronousPublisher(logger, config);
         logQueue = new ArrayBlockingQueue<>(config.getHwm());
         this.logger = logger;
         setName(name);
@@ -30,7 +30,7 @@ public class AsynchronousPublisher extends Thread {
                  // Not a blocking wait, it allows to test if closed every 100 ms
                 // Needed because interrupt deactivated for this thread
                 byte[] log = logQueue.poll(100, TimeUnit.MILLISECONDS);
-                publisher.sendData(log);
+                publisher.send(log);
             }
         } catch (InterruptedException e) {
             // End of processing

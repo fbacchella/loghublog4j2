@@ -6,20 +6,25 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractManager;
 import org.apache.logging.log4j.core.appender.ManagerFactory;
+import org.apache.logging.log4j.core.async.AsyncLoggerContext;
 
-import fr.loghub.logservices.zmq.AsynchronousPublisher;
 import fr.loghub.logservices.zmq.Logger;
+import fr.loghub.logservices.zmq.Publisher;
 import fr.loghub.logservices.zmq.ZMQConfiguration;
 
 public class ZMQManager extends AbstractManager implements Logger {
 
     public static final ManagerFactory<ZMQManager, ZMQConfiguration<LoggerContext>> FACTORY = ZMQManager::new;
 
-    private final AsynchronousPublisher publisher;
+    private final Publisher publisher;
 
     private ZMQManager(String name, ZMQConfiguration<LoggerContext> configuration) {
         super(configuration.getContext(), name);
-        publisher = new AsynchronousPublisher("Log4JZMQPublishingThread",this, configuration);
+        if (configuration.getContext() instanceof AsyncLoggerContext) {
+            publisher = Publisher.synchronous(this, configuration);
+        } else {
+            publisher = Publisher.asynchronous("Log4JZMQPublishingThread",this, configuration);
+        }
     }
 
     public boolean send(byte[] formattedMessage) {

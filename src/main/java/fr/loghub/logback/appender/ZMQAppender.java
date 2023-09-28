@@ -10,7 +10,7 @@ import org.zeromq.SocketType;
 import ch.qos.logback.core.OutputStreamAppender;
 import fr.loghub.logservices.zmq.Logger;
 import fr.loghub.logservices.zmq.Method;
-import fr.loghub.logservices.zmq.AsynchronousPublisher;
+import fr.loghub.logservices.zmq.Publisher;
 import fr.loghub.logservices.zmq.ZMQConfiguration;
 import lombok.Getter;
 import lombok.Setter;
@@ -67,7 +67,7 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
     @Getter @Setter
     private boolean autoCreate = true;
 
-    private AsynchronousPublisher publisher;
+    private Publisher publisher;
 
     /**
      * Define the ØMQ socket type. Current allowed value are PUB or PUSH.
@@ -113,7 +113,7 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
 
         ZMQConfiguration<ZMQAppender<E>> config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger,
                                                                          peerPublicKey, privateKeyFile, publicKey, autoCreate);
-        publisher = new AsynchronousPublisher("Log4JZMQPublishingThread", this, config);
+        publisher = Publisher.asynchronous("Log4JZMQPublishingThread", this, config);
         setOutputStream(new ZMQOutputStream());
         super.start();
     }
