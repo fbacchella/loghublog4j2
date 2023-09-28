@@ -31,13 +31,12 @@ public class TestLayout {
 
     private static ZContext ctx;
     private static Socket socket;
-    private static int port = -1;
 
     @BeforeClass
     public static void start() {
         ctx = new ZContext(1);
         socket = ctx.createSocket(SocketType.PULL);
-        port = socket.bindToRandomPort("tcp://localhost");
+        int port = socket.bindToRandomPort("tcp://localhost");
         System.setProperty("fr.loghub.logback.test.port", Integer.toString(port));
     }
 
