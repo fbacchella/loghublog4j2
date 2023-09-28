@@ -1,8 +1,7 @@
 package fr.loghub.log4j2;
+
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,7 +21,6 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ.Socket;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import zmq.ZMQ;
