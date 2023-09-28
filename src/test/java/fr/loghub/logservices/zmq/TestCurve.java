@@ -76,7 +76,7 @@ public class TestCurve {
         Assert.assertTrue(Files.exists(keyPath.getParent().resolve(publicKey)));
     }
 
-    private void runPublisher(ZMQConfiguration config) throws InterruptedException {
+    private void runPublisher(ZMQConfiguration<?> config) throws InterruptedException {
         List<String> messages = new ArrayList<>();
         Logger customLogger = new Logger() {
 
@@ -104,7 +104,7 @@ public class TestCurve {
         Path privateKeyFile = testFolder.getRoot().toPath().resolve("curve.p8");
         System.setProperty(Publisher.PROPERTY_AUTOCREATE, "true");
         System.setProperty(Publisher.PROPERTY_PRIVATEKEYFILE, privateKeyFile.toString());
-        ZMQConfiguration config = new ZMQConfiguration<>(this, "tcp://localhost:0", SocketType.PULL, Method.BIND, 100, 100, 0, null, null, null, false);
+        ZMQConfiguration<TestCurve> config = new ZMQConfiguration<>(this, "tcp://localhost:0", SocketType.PULL, Method.BIND, 100, 100, 0, null, null, null, false);
         runPublisher(config);
         Assert.assertTrue(Files.exists(privateKeyFile));
     }
@@ -114,7 +114,7 @@ public class TestCurve {
         Path privateKeyFile = testFolder.getRoot().toPath().resolve("curve.p8");
         System.clearProperty(Publisher.PROPERTY_AUTOCREATE);
         System.clearProperty(Publisher.PROPERTY_PRIVATEKEYFILE);
-        ZMQConfiguration config = new ZMQConfiguration<>(this, "tcp://localhost:0", SocketType.PULL, Method.BIND, 100, 100, 0, null, privateKeyFile.toString(), null, true);
+        ZMQConfiguration<TestCurve> config = new ZMQConfiguration<>(this, "tcp://localhost:0", SocketType.PULL, Method.BIND, 100, 100, 0, null, privateKeyFile.toString(), null, true);
         runPublisher(config);
         Assert.assertTrue(Files.exists(privateKeyFile));
     }
@@ -124,7 +124,7 @@ public class TestCurve {
         System.setProperty(Publisher.PROPERTY_AUTOCREATE, "false");
         Path privateKeyFile = testFolder.getRoot().toPath().resolve("curve.p8");
         System.setProperty(Publisher.PROPERTY_PRIVATEKEYFILE, privateKeyFile.toString());
-        ZMQConfiguration config = new ZMQConfiguration<>(this, "tcp://localhost:0", SocketType.PULL, Method.BIND, 100, 100, 0, null, null, null, true);
+        ZMQConfiguration<TestCurve> config = new ZMQConfiguration<>(this, "tcp://localhost:0", SocketType.PULL, Method.BIND, 100, 100, 0, null, null, null, true);
         IllegalStateException ex = Assert.assertThrows(IllegalStateException.class, () -> runPublisher(config));
         Assert.assertTrue(ex.getMessage().endsWith("file missing"));
     }

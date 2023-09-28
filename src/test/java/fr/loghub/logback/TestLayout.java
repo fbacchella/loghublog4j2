@@ -76,7 +76,7 @@ public class TestLayout {
         Assert.assertEquals(MessagePackExtensionType.class, msg1.remove(FieldsName.TIMESTAMP).getClass());
         Assert.assertNotNull(msg1.remove(FieldsName.THROWN));
         Assert.assertEquals("Exception 1", msg1.remove(FieldsName.MESSAGE));
-        Map<?, ?> props1 = (Map) msg1.remove(FieldsName.PROPERTYMAP);
+        Map<?, ?> props1 = (Map<?, ?>) msg1.remove(FieldsName.PROPERTYMAP);
         Assert.assertEquals(3, props1.size());
         Assert.assertEquals("1", props1.get("name1"));
         Assert.assertEquals("2", props1.get("name2"));
@@ -90,12 +90,12 @@ public class TestLayout {
         Assert.assertEquals("INFO", msg2.remove(FieldsName.LEVEL));
         Assert.assertNull(msg2.remove(FieldsName.THROWN));
         Assert.assertEquals("Message 1", msg2.remove(FieldsName.MESSAGE));
-        Map<?, ?> props2 = (Map) msg2.remove(FieldsName.PROPERTYMAP);
+        Map<?, ?> props2 = (Map<?, ?>) msg2.remove(FieldsName.PROPERTYMAP);
         Assert.assertEquals(3, props2.size());
         Assert.assertEquals("1", props2.get("name1"));
         Assert.assertEquals("2", props2.get("name2"));
         Assert.assertEquals(uuid, props2.get("traceid"));
-        List markers = (List) msg2.remove(FieldsName.MARKERS);
+        List<?> markers = (List<?>) msg2.remove(FieldsName.MARKERS);
         Assert.assertEquals(1, markers.size());
         Assert.assertEquals("TESTING_CONTEXT", markers.get(0));
         Assert.assertEquals(msg2.toString(), 0, msg2.size());
