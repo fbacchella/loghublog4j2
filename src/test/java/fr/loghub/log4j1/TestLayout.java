@@ -40,8 +40,8 @@ public class TestLayout {
 
     @AfterClass
     public static void stop() {
-        Optional.ofNullable(socket).ifPresent(s -> s.close());
-        Optional.ofNullable(ctx).ifPresent(s -> s.close());
+        Optional.ofNullable(socket).ifPresent(Socket::close);
+        Optional.ofNullable(ctx).ifPresent(ZContext::close);
     }
 
     @Test(timeout = 5000)
