@@ -45,7 +45,7 @@ public class TestLayout {
     }
 
     @Test(timeout = 5000)
-    public void testMsgPack() throws URISyntaxException, InterruptedException, IOException {
+    public void testMsgPack() throws InterruptedException, IOException {
         List<Map<String, ?>> allmessages = new ArrayList<>();
         JsonFactory factory = new MessagePackFactory();
         ObjectMapper msgpack = new ObjectMapper(factory);

@@ -120,7 +120,7 @@ public class TestCurve {
     }
 
     @Test
-    public void testNoAutoCreate() throws InterruptedException {
+    public void testNoAutoCreate() {
         System.setProperty(Publisher.PROPERTY_AUTOCREATE, "false");
         Path privateKeyFile = testFolder.getRoot().toPath().resolve("curve.p8");
         System.setProperty(Publisher.PROPERTY_PRIVATEKEYFILE, privateKeyFile.toString());
