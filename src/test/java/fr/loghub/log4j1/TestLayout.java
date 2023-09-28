@@ -33,7 +33,7 @@ public class TestLayout {
 
     @BeforeClass
     public static void start() {
-        ZContext ctx = new ZContext(1);
+        ctx = new ZContext(1);
         socket = ctx.createSocket(SocketType.PULL);
         socket.bind("tcp://localhost:1518");
     }
