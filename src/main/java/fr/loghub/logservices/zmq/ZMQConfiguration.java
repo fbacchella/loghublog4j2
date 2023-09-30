@@ -6,11 +6,29 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
+import zmq.Options;
 
 @Getter
 @Data
 @Builder
 public class ZMQConfiguration<C> {
+
+    public static final int DEFAULT_BACKLOG;
+    public static final int DEFAULT_RCV_HWM;
+    public static final int DEFAULT_SND_HWM;
+    public static final int DEFAULT_LINGER;
+    public static final long DEFAULT_MAX_MSGSIZE;
+    public static final SocketType DEFAULT_TYPE = SocketType.PUB;
+    public static final Method DEFAULT_METHOD = Method.CONNECT;
+
+    static {
+        Options options = new Options();
+        DEFAULT_BACKLOG = options.backlog;
+        DEFAULT_LINGER = options.linger;
+        DEFAULT_MAX_MSGSIZE = options.maxMsgSize;
+        DEFAULT_RCV_HWM = options.recvHwm;
+        DEFAULT_SND_HWM = options.sendHwm;
+    }
 
     @NonNull
     public final C context;
@@ -26,6 +44,6 @@ public class ZMQConfiguration<C> {
     public final String privateKeyFile;
     public final String publicKey;
     public final boolean autoCreate;
-    public final long backlog;
+    public final int backlog;
 
 }

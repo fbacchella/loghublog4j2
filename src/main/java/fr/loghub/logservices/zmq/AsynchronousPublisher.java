@@ -13,7 +13,7 @@ class AsynchronousPublisher extends Thread implements Publisher {
 
     AsynchronousPublisher(String name, Logger logger, ZMQConfiguration<?> config) {
         publisher = new SynchronousPublisher(logger, config);
-        logQueue = new ArrayBlockingQueue<>(config.getHwm());
+        logQueue = new ArrayBlockingQueue<>(config.sendHwm);
         this.logger = logger;
         setName(name);
         setDaemon(true);

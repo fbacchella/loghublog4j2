@@ -16,20 +16,20 @@ import lombok.Setter;
 
 public class ZMQAppender extends SerializerAppender implements Logger {
 
-    private SocketType type = Publisher.DEFAULT_TYPE;
-    private Method method = Publisher.DEFAULT_METHOD;
+    private SocketType type = ZMQConfiguration.DEFAULT_TYPE;
+    private Method method = ZMQConfiguration.DEFAULT_METHOD;
     @Getter @Setter
     private String endpoint = null;
     @Getter @Setter
     private int hwm = -1;
     @Getter @Setter
-    private int sndHwm = Publisher.DEFAULT_SND_HWM;
+    private int sndHwm = ZMQConfiguration.DEFAULT_SND_HWM;
     @Getter @Setter
-    private int rcvHwm = Publisher.DEFAULT_RCV_HWM;
+    private int rcvHwm = ZMQConfiguration.DEFAULT_RCV_HWM;
     @Getter @Setter
-    private long maxMsgSize = Publisher.DEFAULT_MAX_MSGSIZE;
+    private long maxMsgSize = ZMQConfiguration.DEFAULT_MAX_MSGSIZE;
     @Getter @Setter
-    private int linger = Publisher.DEFAULT_LINGER;
+    private int linger = ZMQConfiguration.DEFAULT_LINGER;
     @Getter @Setter
     public String peerPublicKey;
     @Getter @Setter

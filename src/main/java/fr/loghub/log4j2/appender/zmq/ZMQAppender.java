@@ -15,7 +15,6 @@ import org.apache.logging.log4j.core.config.plugins.validation.constraints.Requi
 import org.zeromq.SocketType;
 
 import fr.loghub.logservices.zmq.Method;
-import fr.loghub.logservices.zmq.Publisher;
 import fr.loghub.logservices.zmq.ZMQConfiguration;
 
 @Plugin(name = "ZMQ", category = Node.CATEGORY, elementType = Appender.ELEMENT_TYPE, printObject = true)
@@ -29,25 +28,25 @@ public class ZMQAppender extends AbstractAppender {
         String endpoint;
 
         @PluginBuilderAttribute("type")
-        String type = Publisher.DEFAULT_TYPE.name();
+        String type = ZMQConfiguration.DEFAULT_TYPE.name();
 
         @PluginBuilderAttribute("method")
-        String method = Publisher.DEFAULT_METHOD.name();
+        String method = ZMQConfiguration.DEFAULT_METHOD.name();
 
         @PluginBuilderAttribute("hwm")
         int hwm = -1;
 
         @PluginBuilderAttribute(value = "rcvHwm")
-        int rcvHwm = Publisher.DEFAULT_RCV_HWM;
+        int rcvHwm = ZMQConfiguration.DEFAULT_RCV_HWM;
 
         @PluginBuilderAttribute(value = "sndHwm")
-        int sndHwm = Publisher.DEFAULT_SND_HWM;
+        int sndHwm = ZMQConfiguration.DEFAULT_SND_HWM;
 
         @PluginBuilderAttribute("maxMsgSize")
-        long maxMsgSize = Publisher.DEFAULT_MAX_MSGSIZE;
+        long maxMsgSize = ZMQConfiguration.DEFAULT_MAX_MSGSIZE;
 
         @PluginBuilderAttribute("linger")
-        int linger = Publisher.DEFAULT_LINGER;
+        int linger = ZMQConfiguration.DEFAULT_LINGER;
 
         @PluginBuilderAttribute("peerPublicKey")
         public String peerPublicKey;
@@ -62,7 +61,7 @@ public class ZMQAppender extends AbstractAppender {
         public boolean autoCreate;
 
         @PluginBuilderAttribute("backlog")
-        public long backlog = Publisher.DEFAULT_BACKLOG;
+        public int backlog = ZMQConfiguration.DEFAULT_BACKLOG;
 
         @Override
         public ZMQAppender build() {
