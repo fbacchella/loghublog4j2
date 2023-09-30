@@ -5,7 +5,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -14,6 +13,7 @@ import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 import java.util.regex.Matcher;
@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 import org.zeromq.ZConfig;
 import org.zeromq.ZMQ;
 
-import fr.loghub.naclprovider.NaclPrivateKey;
 import fr.loghub.naclprovider.NaclPrivateKeySpec;
 import fr.loghub.naclprovider.NaclProvider;
 import fr.loghub.naclprovider.NaclPublicKeySpec;
@@ -45,11 +44,11 @@ class NaClServices {
     byte[] readPrivateKey(String path) {
         try {
             byte[] key = Files.readAllBytes(Paths.get(path));
-            PKCS8EncodedKeySpec encoded = new PKCS8EncodedKeySpec(key);
-            PrivateKey pv = new NaclPrivateKey(encoded);
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(key);
+            PrivateKey pv = kf.generatePrivate(keySpec);
             NaclPrivateKeySpec naclspec = kf.getKeySpec(pv, NaclPrivateKeySpec.class);
             return naclspec.getBytes();
-        } catch (IOException | InvalidKeyException | InvalidKeySpecException ex) {
+        } catch (IOException | InvalidKeySpecException ex) {
             throw new IllegalArgumentException(ex);
         }
     }
