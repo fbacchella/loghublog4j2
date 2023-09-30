@@ -76,8 +76,9 @@ class SynchronousPublisher implements Publisher {
             throw new InterruptedException();
         } else if (socket == null) {
             socket = ctx.createSocket(config.type);
-            socket.setRcvHWM(config.hwm);
-            socket.setSndHWM(config.hwm);
+            socket.setRcvHWM(config.recvHwm);
+            socket.setSndHWM(config.sendHwm);
+            socket.setBacklog(config.backlog);
             String url = config.endpoint + ":" + config.type.toString() + ":" + config.method.getSymbol();
             socket.setIdentity(url.getBytes());
             curveConfigurator.run();

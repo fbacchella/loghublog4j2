@@ -1,8 +1,5 @@
 package fr.loghub.log4j2.appender.zmq;
 
-import fr.loghub.logservices.zmq.Method;
-import fr.loghub.logservices.zmq.ZMQConfiguration;
-
 import java.util.Locale;
 
 import org.apache.logging.log4j.core.Appender;
@@ -17,6 +14,10 @@ import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.Required;
 import org.zeromq.SocketType;
 
+import fr.loghub.logservices.zmq.Method;
+import fr.loghub.logservices.zmq.Publisher;
+import fr.loghub.logservices.zmq.ZMQConfiguration;
+
 @Plugin(name = "ZMQ", category = Node.CATEGORY, elementType = Appender.ELEMENT_TYPE, printObject = true)
 public class ZMQAppender extends AbstractAppender {
 
@@ -28,19 +29,25 @@ public class ZMQAppender extends AbstractAppender {
         String endpoint;
 
         @PluginBuilderAttribute("type")
-        String type = SocketType.PUB.name();
+        String type = Publisher.DEFAULT_TYPE.name();
 
         @PluginBuilderAttribute("method")
-        String method = Method.CONNECT.name();
+        String method = Publisher.DEFAULT_METHOD.name();
 
         @PluginBuilderAttribute("hwm")
-        int hwm = 1000;
+        int hwm = -1;
+
+        @PluginBuilderAttribute(value = "rcvHwm")
+        int rcvHwm = Publisher.DEFAULT_RCV_HWM;
+
+        @PluginBuilderAttribute(value = "sndHwm")
+        int sndHwm = Publisher.DEFAULT_SND_HWM;
 
         @PluginBuilderAttribute("maxMsgSize")
-        long maxMsgSize = -1;
+        long maxMsgSize = Publisher.DEFAULT_MAX_MSGSIZE;
 
         @PluginBuilderAttribute("linger")
-        int linger = -1;
+        int linger = Publisher.DEFAULT_LINGER;
 
         @PluginBuilderAttribute("peerPublicKey")
         public String peerPublicKey;
@@ -54,23 +61,30 @@ public class ZMQAppender extends AbstractAppender {
         @PluginBuilderAttribute("autoCreate")
         public boolean autoCreate;
 
+        @PluginBuilderAttribute("backlog")
+        public long backlog = Publisher.DEFAULT_BACKLOG;
+
         @Override
         public ZMQAppender build() {
             return new ZMQAppender(this);
         }
 
         public ZMQConfiguration<LoggerContext> configuration() {
-            return new ZMQConfiguration<>(getConfiguration().getLoggerContext(),
-                                          endpoint,
-                                          SocketType.valueOf(type.toUpperCase(Locale.US)),
-                                          Method.valueOf(method.toUpperCase(Locale.US)),
-                                          hwm,
-                                          maxMsgSize,
-                                          linger,
-                                          peerPublicKey,
-                                          privateKeyFile,
-                                          publicKey,
-                                          autoCreate);
+            ZMQConfiguration.ZMQConfigurationBuilder<LoggerContext> builder = ZMQConfiguration.builder();
+            return builder.context(getConfiguration().getLoggerContext())
+                           .endpoint(endpoint)
+                           .type(SocketType.valueOf(type.toUpperCase(Locale.US)))
+                           .method(Method.valueOf(method.toUpperCase(Locale.US)))
+                           .maxMsgSize(maxMsgSize)
+                           .sendHwm(hwm != -1 ? hwm : sndHwm)
+                           .recvHwm(hwm != -1 ? hwm : rcvHwm)
+                           .linger(linger)
+                           .peerPublicKey(peerPublicKey)
+                           .privateKeyFile(privateKeyFile)
+                           .publicKey(publicKey)
+                           .autoCreate(autoCreate)
+                           .backlog(backlog)
+                           .build();
         }
 
     }

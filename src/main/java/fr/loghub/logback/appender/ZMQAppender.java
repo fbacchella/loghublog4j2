@@ -48,16 +48,20 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
         }
     }
 
-    private SocketType type = SocketType.PUB;
-    private Method method = Method.CONNECT;
+    private SocketType type = Publisher.DEFAULT_TYPE;
+    private Method method = Publisher.DEFAULT_METHOD;
     @Getter @Setter
     private String endpoint = null;
     @Getter @Setter
-    private int hwm = 1000;
+    private int hwm = -1;
     @Getter @Setter
-    private long maxMsgSize = -1;
+    private int sndHwm = Publisher.DEFAULT_SND_HWM;
     @Getter @Setter
-    private int linger;
+    private int rcvHwm = Publisher.DEFAULT_RCV_HWM;
+    @Getter @Setter
+    private long maxMsgSize = Publisher.DEFAULT_MAX_MSGSIZE;
+    @Getter @Setter
+    private int linger = Publisher.DEFAULT_LINGER;
     @Getter @Setter
     public String peerPublicKey;
     @Getter @Setter
@@ -110,9 +114,21 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
             addError("Unconfigured endpoint, the ZMQ appender can't log");
             return;
         }
+        ZMQConfiguration.ZMQConfigurationBuilder<ZMQAppender<E>> builder = ZMQConfiguration.builder();
+        ZMQConfiguration<ZMQAppender<E>> config = builder.context(this)
+                                                         .endpoint(endpoint)
+                                                         .type(type)
+                                                         .method(method)
+                                                         .maxMsgSize(maxMsgSize)
+                                                         .sendHwm(hwm != -1 ? hwm : sndHwm)
+                                                         .recvHwm(hwm != -1 ? hwm : rcvHwm)
+                                                         .linger(linger)
+                                                         .peerPublicKey(peerPublicKey)
+                                                         .privateKeyFile(privateKeyFile)
+                                                         .publicKey(publicKey)
+                                                         .autoCreate(autoCreate)
+                                                         .build();
 
-        ZMQConfiguration<ZMQAppender<E>> config = new ZMQConfiguration<>(this, endpoint, type, method, hwm, maxMsgSize, linger,
-                                                                         peerPublicKey, privateKeyFile, publicKey, autoCreate);
         publisher = Publisher.asynchronous("Log4JZMQPublishingThread", this, config);
         setOutputStream(new ZMQOutputStream());
         super.start();
