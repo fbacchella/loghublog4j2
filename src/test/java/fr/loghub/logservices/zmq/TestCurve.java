@@ -50,8 +50,19 @@ public class TestCurve {
             socket.setCurvePublicKey(serverPublicKey);
             socket.setCurveServer(true);
             String serverPublicKeyString = Base64.getEncoder().encodeToString(serverPublicKey);
-            ZMQConfiguration<?> configuration = new ZMQConfiguration<>(this, "tcp://127.0.0.1:" + port,
-                    SocketType.PUSH, Method.CONNECT, 100, 1024, 1, serverPublicKeyString, clientKeyPath, null, true);
+            ZMQConfiguration<?> configuration = ZMQConfiguration.builder()
+                                                                .context(this)
+                                                                .endpoint("tcp://127.0.0.1:" + port)
+                                                                .type(SocketType.PUSH)
+                                                                .method(Method.CONNECT)
+                                                                .sendHwm(100)
+                                                                .recvHwm(100)
+                                                                .maxMsgSize(1024)
+                                                                .linger(1)
+                                                                .peerPublicKey(serverPublicKeyString)
+                                                                .privateKeyFile(clientKeyPath)
+                                                                .autoCreate(true)
+                                                                .build();
             AsynchronousPublisher pub = new AsynchronousPublisher("testcurve", logger, configuration);
             Assert.assertTrue(pub.send("hello".getBytes(StandardCharsets.UTF_8)));
             Assert.assertEquals("hello", socket.recvStr());
@@ -104,7 +115,17 @@ public class TestCurve {
         Path privateKeyFile = testFolder.getRoot().toPath().resolve("curve.p8");
         System.setProperty(Publisher.PROPERTY_AUTOCREATE, "true");
         System.setProperty(Publisher.PROPERTY_PRIVATEKEYFILE, privateKeyFile.toString());
-        ZMQConfiguration<TestCurve> config = new ZMQConfiguration<>(this, "tcp://localhost:0", SocketType.PULL, Method.BIND, 100, 100, 0, null, null, null, false);
+        ZMQConfiguration<?> config = ZMQConfiguration.builder()
+                                                    .context(this)
+                                                    .endpoint("tcp://localhost:0")
+                                                    .type(SocketType.PULL)
+                                                    .method(Method.BIND)
+                                                    .sendHwm(100)
+                                                    .recvHwm(100)
+                                                    .maxMsgSize(100)
+                                                    .linger(0)
+                                                    .autoCreate(false)
+                                                    .build();
         runPublisher(config);
         Assert.assertTrue(Files.exists(privateKeyFile));
     }
@@ -114,7 +135,18 @@ public class TestCurve {
         Path privateKeyFile = testFolder.getRoot().toPath().resolve("curve.p8");
         System.clearProperty(Publisher.PROPERTY_AUTOCREATE);
         System.clearProperty(Publisher.PROPERTY_PRIVATEKEYFILE);
-        ZMQConfiguration<TestCurve> config = new ZMQConfiguration<>(this, "tcp://localhost:0", SocketType.PULL, Method.BIND, 100, 100, 0, null, privateKeyFile.toString(), null, true);
+        ZMQConfiguration<?> config = ZMQConfiguration.builder()
+                                             .context(this)
+                                             .endpoint("tcp://localhost:0")
+                                             .type(SocketType.PULL)
+                                             .method(Method.BIND)
+                                             .sendHwm(100)
+                                             .recvHwm(100)
+                                             .maxMsgSize(100)
+                                             .linger(0)
+                                             .privateKeyFile(privateKeyFile.toString())
+                                             .autoCreate(true)
+                                             .build();
         runPublisher(config);
         Assert.assertTrue(Files.exists(privateKeyFile));
     }
@@ -124,7 +156,17 @@ public class TestCurve {
         System.setProperty(Publisher.PROPERTY_AUTOCREATE, "false");
         Path privateKeyFile = testFolder.getRoot().toPath().resolve("curve.p8");
         System.setProperty(Publisher.PROPERTY_PRIVATEKEYFILE, privateKeyFile.toString());
-        ZMQConfiguration<TestCurve> config = new ZMQConfiguration<>(this, "tcp://localhost:0", SocketType.PULL, Method.BIND, 100, 100, 0, null, null, null, true);
+        ZMQConfiguration<?> config = ZMQConfiguration.builder()
+                                             .context(this)
+                                             .endpoint("tcp://localhost:0")
+                                             .type(SocketType.PULL)
+                                             .method(Method.BIND)
+                                             .sendHwm(100)
+                                             .recvHwm(100)
+                                             .maxMsgSize(100)
+                                             .linger(0)
+                                             .autoCreate(true)
+                                             .build();
         IllegalStateException ex = Assert.assertThrows(IllegalStateException.class, () -> runPublisher(config));
         Assert.assertTrue(ex.getMessage().endsWith("file missing"));
     }
