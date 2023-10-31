@@ -26,7 +26,7 @@ class SynchronousPublisher implements Publisher {
 
     SynchronousPublisher(Logger logger, ZMQConfiguration<?> config) {
         ctx = new ZContext(1);
-        ctx.setLinger(0);
+        ctx.setLinger(config.linger);
         this.config = config;
         this.curveConfigurator = getCurveConfigurator();
         this.logger = logger;
@@ -76,14 +76,24 @@ class SynchronousPublisher implements Publisher {
             throw new InterruptedException();
         } else if (socket == null) {
             socket = ctx.createSocket(config.type);
-            socket.setRcvHWM(config.recvHwm);
-            socket.setSndHWM(config.sendHwm);
-            socket.setBacklog(config.backlog);
             String url = config.endpoint + ":" + config.type.toString() + ":" + config.method.getSymbol();
             socket.setIdentity(url.getBytes());
             curveConfigurator.run();
-            Optional.of(config.getMaxMsgSize()).filter(i -> i > 0).ifPresent(socket::setMaxMsgSize);
-            Optional.of(config.getLinger()).filter(i -> i > 0).ifPresent(socket::setLinger);
+            Optional.of(config.maxMsgSize).filter(i -> i >= 0).ifPresent(socket::setMaxMsgSize);
+            socket.setLinger(config.linger);
+            Optional.of(config.backlog).filter(i -> i >= 0).ifPresent(socket::setBacklog);
+            Optional.of(config.affinity).filter(i -> i >= 0).ifPresent(socket::setAffinity);
+            Optional.of(config.tcpKeepAlive).filter(i -> i >= 0).ifPresent(socket::setTCPKeepAlive);
+            Optional.of(config.tcpKeepAliveCount).filter(i -> i >= 0).ifPresent(socket::setTCPKeepAliveCount);
+            Optional.of(config.tcpKeepAliveIdle).filter(i -> i >= 0).ifPresent(socket::setTCPKeepAliveIdle);
+            Optional.of(config.recvHwm).filter(i -> i >= 0).ifPresent(socket::setRcvHWM);
+            Optional.of(config.sendHwm).filter(i -> i >= 0).ifPresent(socket::setSndHWM);
+            Optional.of(config.tos).filter(i -> i >= 0).ifPresent(socket::setTos);
+            Optional.of(config.sendBufferSize).filter(i -> i >= 0).ifPresent(socket::setSendBufferSize);
+            Optional.of(config.receiveBufferSize).filter(i -> i >= 0).ifPresent(socket::setReceiveBufferSize);
+            Optional.of(config.sendTimeOut).filter(i -> i >= 0).ifPresent(socket::setSendTimeOut);
+            socket.setXpubVerbose(config.xpubVerbose);
+            socket.setIPv6(config.ipv6);
             config.method.act(socket, config.endpoint);
         }
     }

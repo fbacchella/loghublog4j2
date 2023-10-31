@@ -14,6 +14,7 @@ import fr.loghub.logservices.zmq.Publisher;
 import fr.loghub.logservices.zmq.ZMQConfiguration;
 import lombok.Getter;
 import lombok.Setter;
+import zmq.ZMQ;
 
 public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
 
@@ -55,21 +56,25 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
     @Getter @Setter
     private int hwm = -1;
     @Getter @Setter
-    private int sndHwm = ZMQConfiguration.DEFAULT_SND_HWM;
+    private int sndHwm = ZMQ.DEFAULT_SEND_HWM;
     @Getter @Setter
-    private int rcvHwm = ZMQConfiguration.DEFAULT_RCV_HWM;
+    private int rcvHwm = ZMQ.DEFAULT_RECV_HWM;
     @Getter @Setter
-    private long maxMsgSize = ZMQConfiguration.DEFAULT_MAX_MSGSIZE;
+    private long maxMsgSize = ZMQ.DEFAULT_MAX_MSG_SIZE;
     @Getter @Setter
-    private int linger = ZMQConfiguration.DEFAULT_LINGER;
+    private int linger = ZMQ.DEFAULT_LINGER;
     @Getter @Setter
-    public String peerPublicKey;
+    public String peerPublicKey = null;
     @Getter @Setter
-    public String privateKeyFile;
+    public String privateKeyFile = null;
     @Getter @Setter
-    public String publicKey;
+    public String publicKey = null;
     @Getter @Setter
-    private boolean autoCreate = true;
+    private boolean autoCreate = false;
+    @Getter @Setter
+    private int backlog = ZMQ.DEFAULT_BACKLOG;
+    @Getter @Setter
+    boolean ipv6 = ZMQ.DEFAULT_IPV6;
 
     private Publisher publisher;
 
@@ -127,6 +132,8 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
                                                          .privateKeyFile(privateKeyFile)
                                                          .publicKey(publicKey)
                                                          .autoCreate(autoCreate)
+                                                         .ipv6(ipv6)
+                                                         .backlog(backlog)
                                                          .build();
 
         publisher = Publisher.asynchronous("Log4JZMQPublishingThread", this, config);

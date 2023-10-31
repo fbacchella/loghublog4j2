@@ -14,6 +14,10 @@ import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.Required;
 import org.zeromq.SocketType;
 
+import lombok.Getter;
+import lombok.Setter;
+import zmq.ZMQ;
+
 import fr.loghub.logservices.zmq.Method;
 import fr.loghub.logservices.zmq.ZMQConfiguration;
 
@@ -37,31 +41,34 @@ public class ZMQAppender extends AbstractAppender {
         int hwm = -1;
 
         @PluginBuilderAttribute(value = "rcvHwm")
-        int rcvHwm = ZMQConfiguration.DEFAULT_RCV_HWM;
+        int rcvHwm = ZMQ.DEFAULT_RECV_HWM;
 
         @PluginBuilderAttribute(value = "sndHwm")
-        int sndHwm = ZMQConfiguration.DEFAULT_SND_HWM;
+        int sndHwm = ZMQ.DEFAULT_SEND_HWM;
 
         @PluginBuilderAttribute("maxMsgSize")
-        long maxMsgSize = ZMQConfiguration.DEFAULT_MAX_MSGSIZE;
+        long maxMsgSize = ZMQ.DEFAULT_MAX_MSG_SIZE;
 
         @PluginBuilderAttribute("linger")
-        int linger = ZMQConfiguration.DEFAULT_LINGER;
+        int linger = ZMQ.DEFAULT_LINGER;
 
         @PluginBuilderAttribute("peerPublicKey")
-        public String peerPublicKey;
+        public String peerPublicKey = null;
 
         @PluginBuilderAttribute("privateKeyFile")
-        public String privateKeyFile;
+        public String privateKeyFile = null;
 
         @PluginBuilderAttribute("publicKey")
-        public String publicKey;
+        public String publicKey = null;
 
         @PluginBuilderAttribute("autoCreate")
-        public boolean autoCreate;
+        public boolean autoCreate = false;
 
         @PluginBuilderAttribute("backlog")
-        public int backlog = ZMQConfiguration.DEFAULT_BACKLOG;
+        public int backlog = ZMQ.DEFAULT_BACKLOG;
+
+        @PluginBuilderAttribute("ipv6")
+        boolean ipv6 = ZMQ.DEFAULT_IPV6;
 
         @Override
         public ZMQAppender build() {
@@ -83,6 +90,7 @@ public class ZMQAppender extends AbstractAppender {
                            .publicKey(publicKey)
                            .autoCreate(autoCreate)
                            .backlog(backlog)
+                           .ipv6(ipv6)
                            .build();
         }
 
