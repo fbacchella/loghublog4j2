@@ -4,13 +4,12 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+@Setter
 @Getter
 @Data
 public class AdditionalField {
 
-    @Setter
     private String name;
-    @Setter
     private String value;
 
 }
