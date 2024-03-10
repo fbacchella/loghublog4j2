@@ -14,12 +14,9 @@ import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
 import org.apache.logging.log4j.core.config.plugins.validation.constraints.Required;
 import org.zeromq.SocketType;
 
-import lombok.Getter;
-import lombok.Setter;
-import zmq.ZMQ;
-
 import fr.loghub.logservices.zmq.Method;
 import fr.loghub.logservices.zmq.ZMQConfiguration;
+import zmq.ZMQ;
 
 @Plugin(name = "ZMQ", category = Node.CATEGORY, elementType = Appender.ELEMENT_TYPE, printObject = true)
 public class ZMQAppender extends AbstractAppender {

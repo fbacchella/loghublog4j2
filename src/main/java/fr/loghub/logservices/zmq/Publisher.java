@@ -1,7 +1,5 @@
 package fr.loghub.logservices.zmq;
 
-import org.zeromq.SocketType;
-
 public interface Publisher {
 
     String PROPERTY_PRIVATEKEYFILE = "fr.loghub.logging.zmq.curve.privateKeyFile";
