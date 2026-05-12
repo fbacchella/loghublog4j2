@@ -14,7 +14,8 @@
         <!-- The project should have a source encoding set. -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- current year. -->
-        <year>2023</year>
+        <year>2026</year>
+        <msgpack.version>0.9.12</msgpack.version>
         <!-- Indirection needed to keep optionnal jacoco settings and external argument lines-->
         <arg.line></arg.line>
         <argLine>${arg.line}</argLine>
@@ -24,7 +25,7 @@
         <dependency>
             <groupId>org.msgpack</groupId>
             <artifactId>msgpack-core</artifactId>
-            <version>0.9.12</version>
+            <version>${msgpack.version}</version>
         </dependency>
         <dependency>
             <groupId>org.zeromq</groupId>
@@ -480,15 +481,13 @@
                     <version>3.12.0</version>
                     <configuration>
                         <links>
-                            <link>http://zeromq.github.io/jzmq/javadocs/</link>
-                            <link>https://www.javadoc.io/doc/org.msgpack/msgpack-core/0.9.0</link>
-                            <link>https://logging.apache.org/log4j/2.0/log4j-api/apidocs</link>
+                            <link>https://javadoc.io/static/org.zeromq/jeromq/0.6.0/</link>
+                            <link>https://javadoc.io/static/org.msgpack/msgpack-core/${msgpack.version}/</link>
+                            <link>https://logging.apache.org/log4j/2.x/javadoc/log4j-api/</link>
                         </links>
-                        <keywords>true</keywords>
-                        <source>${maven.compiler.source}</source>
-                        <detectJavaApiLink>false</detectJavaApiLink>
-                        <detectLinks>false</detectLinks>
-                        <quiet>true</quiet>
+                        <source>8</source>
+                        <detectJavaApiLink>true</detectJavaApiLink>
+                        <detectLinks>true</detectLinks>
                         <validateLinks>true</validateLinks>
                     </configuration>
                 </plugin>
