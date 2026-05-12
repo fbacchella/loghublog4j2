@@ -33,6 +33,16 @@ public class AdditionalField {
 
     public static class Builder implements org.apache.logging.log4j.core.util.Builder<AdditionalField> {
 
+        public Builder setName(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder setValue(String value) {
+            this.value = value;
+            return this;
+        }
+
         @PluginBuilderAttribute
         private String name;
 

@@ -40,6 +40,11 @@ public class MsgPackLayout extends AbstractLayout<Message> {
         @PluginBuilderAttribute
         private boolean locationInfo = false;
 
+        public Builder setLocationInfo(boolean locationInfo) {
+            this.locationInfo = locationInfo;
+            return this;
+        }
+
         @Override
         public MsgPackLayout build() {
             return new MsgPackLayout(this);

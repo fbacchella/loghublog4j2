@@ -45,6 +45,16 @@ public class GCAppender extends AbstractAppender {
         @PluginBuilderAttribute("parent")
         String parent = "gc";
 
+        public Builder setLevel(String level) {
+            this.level = level;
+            return this;
+        }
+
+        public Builder setParent(String parent) {
+            this.parent = parent;
+            return this;
+        }
+
         @Override
         public GCAppender build() {
             return new GCAppender(this);

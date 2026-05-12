@@ -67,6 +67,76 @@ public class ZMQAppender extends AbstractAppender {
         @PluginBuilderAttribute("ipv6")
         boolean ipv6 = ZMQ.DEFAULT_IPV6;
 
+        public ZMQBuilder setEndpoint(String endpoint) {
+            this.endpoint = endpoint;
+            return this;
+        }
+
+        public ZMQBuilder setType(String type) {
+            this.type = type;
+            return this;
+        }
+
+        public ZMQBuilder setMethod(String method) {
+            this.method = method;
+            return this;
+        }
+
+        public ZMQBuilder setHwm(int hwm) {
+            this.hwm = hwm;
+            return this;
+        }
+
+        public ZMQBuilder setRcvHwm(int rcvHwm) {
+            this.rcvHwm = rcvHwm;
+            return this;
+        }
+
+        public ZMQBuilder setSndHwm(int sndHwm) {
+            this.sndHwm = sndHwm;
+            return this;
+        }
+
+        public ZMQBuilder setMaxMsgSize(long maxMsgSize) {
+            this.maxMsgSize = maxMsgSize;
+            return this;
+        }
+
+        public ZMQBuilder setLinger(int linger) {
+            this.linger = linger;
+            return this;
+        }
+
+        public ZMQBuilder setPeerPublicKey(String peerPublicKey) {
+            this.peerPublicKey = peerPublicKey;
+            return this;
+        }
+
+        public ZMQBuilder setPrivateKeyFile(String privateKeyFile) {
+            this.privateKeyFile = privateKeyFile;
+            return this;
+        }
+
+        public ZMQBuilder setPublicKey(String publicKey) {
+            this.publicKey = publicKey;
+            return this;
+        }
+
+        public ZMQBuilder setAutoCreate(boolean autoCreate) {
+            this.autoCreate = autoCreate;
+            return this;
+        }
+
+        public ZMQBuilder setBacklog(int backlog) {
+            this.backlog = backlog;
+            return this;
+        }
+
+        public ZMQBuilder setIpv6(boolean ipv6) {
+            this.ipv6 = ipv6;
+            return this;
+        }
+
         @Override
         public ZMQAppender build() {
             return new ZMQAppender(this);
