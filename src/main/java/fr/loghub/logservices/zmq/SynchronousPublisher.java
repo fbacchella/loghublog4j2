@@ -80,7 +80,7 @@ class SynchronousPublisher implements Publisher {
             socket.setIdentity(url.getBytes());
             curveConfigurator.run();
             Optional.of(config.maxMsgSize).filter(i -> i >= 0).ifPresent(socket::setMaxMsgSize);
-            socket.setLinger(config.linger);
+            Optional.of(config.linger).filter(i -> i > 0).ifPresent(socket::setLinger);
             Optional.of(config.backlog).filter(i -> i >= 0).ifPresent(socket::setBacklog);
             Optional.of(config.affinity).filter(i -> i >= 0).ifPresent(socket::setAffinity);
             Optional.of(config.tcpKeepAlive).filter(i -> i >= 0).ifPresent(socket::setTCPKeepAlive);
@@ -92,7 +92,6 @@ class SynchronousPublisher implements Publisher {
             Optional.of(config.sendBufferSize).filter(i -> i >= 0).ifPresent(socket::setSendBufferSize);
             Optional.of(config.receiveBufferSize).filter(i -> i >= 0).ifPresent(socket::setReceiveBufferSize);
             Optional.of(config.sendTimeOut).filter(i -> i >= 0).ifPresent(socket::setSendTimeOut);
-            socket.setXpubVerbose(config.xpubVerbose);
             socket.setIPv6(config.ipv6);
             config.method.act(socket, config.endpoint);
         }
