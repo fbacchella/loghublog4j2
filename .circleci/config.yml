@@ -2,7 +2,7 @@ version: 2.1
 jobs:
     checkout:
         docker:
-            - image: cimg/openjdk:21.0
+            - image: cimg/openjdk:25.0
         steps:
             - checkout:
                 method: full
@@ -22,7 +22,7 @@ jobs:
                     - home/circleci/project
     build:
         docker:
-            - image: cimg/openjdk:21.0
+            - image: cimg/openjdk:25.0
         steps:
             - attach_workspace:
                 at: /tmp/ws
@@ -40,9 +40,9 @@ jobs:
                 paths:
                     - home/circleci/.m2/repository
                     - home/circleci/project/target
-    testsj21:
+    testsj25:
         docker:
-            - image: cimg/openjdk:21.0
+            - image: cimg/openjdk:25.0
         steps:
             - attach_workspace:
                 at: /tmp/ws
@@ -74,6 +74,27 @@ jobs:
                 paths:
                     - home/circleci/.m2/repository
                     - home/circleci/.sonar/cache
+    testsj21:
+        docker:
+            - image: cimg/openjdk:21.0
+        steps:
+            - attach_workspace:
+                  at: /tmp/ws
+            - run:
+                  command: |
+                      mv -n /tmp/ws/home/circleci/.m2 /home/circleci/
+                      mv -n /tmp/ws/home/circleci/.sonar /home/circleci/
+                      mv -n /tmp/ws/home/circleci/project/* /home/circleci/project/
+                      mv -n /tmp/ws/home/circleci/project/.??* /home/circleci/project/
+            - run:
+                  command: |
+                      mkdir -p /tmp/$CIRCLE_JOB
+                      mvn -B test -Pskip -Darg.line="-Xmx2048m" -s .circleci/settings.xml
+                  environment:
+                      MAVEN_OPTS: "-Xmx512m"
+            - store_test_results:
+                  path: target/surefire-reports
+            #don't persist_to_workspace, can't be done in parallel with testsj20
     testsj17:
         docker:
             - image: cimg/openjdk:17.0
@@ -116,30 +137,9 @@ jobs:
             - store_test_results:
                 path: target/surefire-reports
             #don't persist_to_workspace, can't be done in parallel with testsj17
-    testsj8:
-        docker:
-            - image: cimg/openjdk:8.0
-        steps:
-            - attach_workspace:
-                at: /tmp/ws
-            - run:
-                command: |
-                    mv -n /tmp/ws/home/circleci/.m2 /home/circleci/
-                    mv -n /tmp/ws/home/circleci/.sonar /home/circleci/
-                    mv -n /tmp/ws/home/circleci/project/* /home/circleci/project/
-                    mv -n /tmp/ws/home/circleci/project/.??* /home/circleci/project/
-            - run:
-                command: |
-                    mkdir -p /tmp/$CIRCLE_JOB
-                    mvn -B test -Pskip -Darg.line="-Xmx2048m" -s .circleci/settings.xml
-                environment:
-                    MAVEN_OPTS: "-Xmx512m"
-            - store_test_results:
-                path: target/surefire-reports
-            #don't persist_to_workspace, can't be done in parallel with testsj20
     publish:
         docker:
-            - image: cimg/openjdk:21.0
+            - image: cimg/openjdk:25.0
         steps:
             - attach_workspace:
                 at: /tmp/ws
@@ -172,7 +172,7 @@ jobs:
                     - home/circleci/.sonar/cache
     savecache:
         docker:
-            - image: cimg/openjdk:21.0
+            - image: cimg/openjdk:25.0
         steps:
             - attach_workspace:
                 at: /tmp/ws
@@ -194,9 +194,6 @@ workflows:
             - build:
                   requires:
                       - checkout
-            - testsj8:
-                  requires:
-                      - build
             - testsj11:
                   requires:
                       - build
@@ -206,13 +203,16 @@ workflows:
             - testsj21:
                   requires:
                       - build
+            - testsj25:
+                  requires:
+                      - build
                   context: "Security variables"
             - publish:
                   requires:
-                      - testsj8
                       - testsj11
                       - testsj17
                       - testsj21
+                      - testsj25
                   context: "Security variables"
             - savecache:
                   requires:

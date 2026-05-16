@@ -11,6 +11,7 @@
     <url>https://github.com/fbacchella/loghublog4j2</url>
 
     <properties>
+        <maven.compiler.release>11</maven.compiler.release>
         <!-- The project should have a source encoding set. -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- current year. -->
@@ -632,35 +633,6 @@
                     </plugin>
                 </plugins>
             </reporting>
-        </profile>
-        <profile>
-            <id>java8</id>
-            <activation>
-                <jdk>1.8</jdk>
-            </activation>
-            <properties>
-                <maven.compiler.source>1.8</maven.compiler.source>
-                <maven.compiler.target>1.8</maven.compiler.target>
-                <argLine>${arg.line}</argLine>
-            </properties>
-        </profile>
-        <profile>
-            <id>notjava8</id>
-            <activation>
-                <jdk>(1.8,)</jdk>
-            </activation>
-            <properties>
-                <maven.compiler.release>8</maven.compiler.release>
-                <argLine>${arg.line}</argLine>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
         <profile>
             <id>gpgsign</id>
