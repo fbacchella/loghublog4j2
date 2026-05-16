@@ -7,6 +7,14 @@
             <method>connect</method>
             <hwm>1000</hwm>
             <autoCreate>true</autoCreate>
+            <zMQSocketProperty>
+                <name>ipv6</name>
+                <value>false</value>
+            </zMQSocketProperty>
+            <zMQSocketProperty>
+                <name>sendHwm</name>
+                <value>1001</value>
+            </zMQSocketProperty>
             <MsgPackLayout>
                 <AdditionalField name="a">1</AdditionalField>
                 <AdditionalField name="b">${sys:fr.loghub.log4j2.test.port}</AdditionalField>

@@ -1,23 +1,30 @@
 package fr.loghub.logservices.zmq;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.function.Supplier;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.zeromq.Curve;
+import org.zeromq.Method;
+import org.zeromq.SocketConfigurator;
 import org.zeromq.SocketType;
 import org.zeromq.ZConfig;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
+
+import fr.loghub.logservices.zmq.ZMQConfiguration.Builder;
+import zmq.io.mechanism.curve.CurveMechanismSettings;
 
 public class TestCurve {
 
@@ -25,6 +32,12 @@ public class TestCurve {
     public TemporaryFolder testFolder = new TemporaryFolder();
 
     private final NaClServices nacl = new NaClServices();
+
+    @Before
+    public void clear() {
+        System.clearProperty(Publisher.PROPERTY_AUTOCREATE);
+        System.clearProperty(Publisher.PROPERTY_PRIVATEKEYFILE);
+    }
 
     @Test(timeout = 2000)
     public void publisher() throws IOException {
@@ -39,27 +52,28 @@ public class TestCurve {
 
             }
         };
-        try (ZContext ctx = new ZContext(1)) {
-            ZMQ.Socket socket = ctx.createSocket(SocketType.PULL);
-            int port = socket.bindToRandomPort("tcp://127.0.0.1");
-            String serverKeyPath = testFolder.getRoot().toPath().resolve(Paths.get("serversecret.p8")).toString();
-            String clientKeyPath = testFolder.getRoot().toPath().resolve(Paths.get("clientsecret.p8")).toString();
+        try (ZContext ctx = new ZContext(1);
+             ZMQ.Socket socket = ctx.createSocket(SocketType.PULL)
+        ) {
+            Path keydir =  testFolder.newFolder("keys").toPath();
+            Path serverKeyPath = keydir.resolve("serversecret.p8");
+            Path clientKeyPath = keydir.resolve("clientsecret.p8");
             byte[] serverPublicKey = nacl.writePair(serverKeyPath);
             byte[] serverSecretKey = nacl.readPrivateKey(serverKeyPath);
-            socket.setCurveSecretKey(serverSecretKey);
-            socket.setCurvePublicKey(serverPublicKey);
-            socket.setCurveServer(true);
-            String serverPublicKeyString = Base64.getEncoder().encodeToString(serverPublicKey);
+            CurveMechanismSettings curveMechanism = CurveMechanismSettings.getBuilder()
+                                                                  .setSecretKey(serverSecretKey)
+                                                                  .setPublicKey(serverPublicKey)
+                                                                  .build();
+            socket.setMechanism(curveMechanism);
+            int port = socket.bindToRandomPort("tcp://127.0.0.1");
+            SocketConfigurator.Builder scBuilder = SocketConfigurator.builder();
+            scBuilder.curvePeerPublicKey(serverPublicKey);
             ZMQConfiguration<?> configuration = ZMQConfiguration.builder()
                                                                 .context(this)
                                                                 .endpoint("tcp://127.0.0.1:" + port)
                                                                 .type(SocketType.PUSH)
                                                                 .method(Method.CONNECT)
-                                                                .sendHwm(100)
-                                                                .recvHwm(100)
-                                                                .maxMsgSize(1024)
-                                                                .linger(1)
-                                                                .peerPublicKey(serverPublicKeyString)
+                                                                .configurator(scBuilder)
                                                                 .privateKeyFile(clientKeyPath)
                                                                 .autoCreate(true)
                                                                 .build();
@@ -67,8 +81,8 @@ public class TestCurve {
             Assert.assertTrue(pub.send("hello".getBytes(StandardCharsets.UTF_8)));
             Assert.assertEquals("hello", socket.recvStr());
             pub.close();
-            ZConfig clientZpl = ZConfig.load(clientKeyPath.replace(".p8", ".zpl"));
-            byte[] pubKey = ZMQ.Curve.z85Decode(clientZpl.getValue("curve/public-key"));
+            ZConfig clientZpl = ZConfig.load(new FileReader(clientKeyPath.toString().replace(".p8", ".zpl")));
+            byte[] pubKey = Curve.z85Decode(clientZpl.getValue("curve/public-key"));
             Assert.assertEquals(32, pubKey.length);
         }
     }
@@ -82,7 +96,7 @@ public class TestCurve {
     }
 
     private void checkCreated(Path keyPath, String privateKey, String publicKey) {
-        nacl.writePair(keyPath.toString());
+        nacl.writePair(keyPath);
         Assert.assertTrue(Files.exists(keyPath.getParent().resolve(privateKey)));
         Assert.assertTrue(Files.exists(keyPath.getParent().resolve(publicKey)));
     }
@@ -117,13 +131,10 @@ public class TestCurve {
         System.setProperty(Publisher.PROPERTY_PRIVATEKEYFILE, privateKeyFile.toString());
         ZMQConfiguration<?> config = ZMQConfiguration.builder()
                                                     .context(this)
+                                                    .configurator(SocketConfigurator.builder())
                                                     .endpoint("tcp://localhost:0")
                                                     .type(SocketType.PULL)
                                                     .method(Method.BIND)
-                                                    .sendHwm(100)
-                                                    .recvHwm(100)
-                                                    .maxMsgSize(100)
-                                                    .linger(0)
                                                     .autoCreate(false)
                                                     .build();
         runPublisher(config);
@@ -133,18 +144,13 @@ public class TestCurve {
     @Test
     public void testAutoCreateSettings() throws InterruptedException {
         Path privateKeyFile = testFolder.getRoot().toPath().resolve("curve.p8");
-        System.clearProperty(Publisher.PROPERTY_AUTOCREATE);
-        System.clearProperty(Publisher.PROPERTY_PRIVATEKEYFILE);
         ZMQConfiguration<?> config = ZMQConfiguration.builder()
                                              .context(this)
+                                             .configurator(SocketConfigurator.builder())
                                              .endpoint("tcp://localhost:0")
                                              .type(SocketType.PULL)
                                              .method(Method.BIND)
-                                             .sendHwm(100)
-                                             .recvHwm(100)
-                                             .maxMsgSize(100)
-                                             .linger(0)
-                                             .privateKeyFile(privateKeyFile.toString())
+                                             .privateKeyFile(privateKeyFile)
                                              .autoCreate(true)
                                              .build();
         runPublisher(config);
@@ -156,18 +162,13 @@ public class TestCurve {
         System.setProperty(Publisher.PROPERTY_AUTOCREATE, "false");
         Path privateKeyFile = testFolder.getRoot().toPath().resolve("curve.p8");
         System.setProperty(Publisher.PROPERTY_PRIVATEKEYFILE, privateKeyFile.toString());
-        ZMQConfiguration<?> config = ZMQConfiguration.builder()
-                                             .context(this)
-                                             .endpoint("tcp://localhost:0")
-                                             .type(SocketType.PULL)
-                                             .method(Method.BIND)
-                                             .sendHwm(100)
-                                             .recvHwm(100)
-                                             .maxMsgSize(100)
-                                             .linger(0)
-                                             .autoCreate(true)
-                                             .build();
-        IllegalStateException ex = Assert.assertThrows(IllegalStateException.class, () -> runPublisher(config));
+        Builder<?> config = ZMQConfiguration.builder()
+                                            .context(this)
+                                            .endpoint("tcp://localhost:0")
+                                            .type(SocketType.PULL)
+                                            .method(Method.BIND)
+                                            .autoCreate(true);
+        IllegalStateException ex = Assert.assertThrows(IllegalStateException.class, config::build);
         Assert.assertTrue(ex.getMessage().endsWith("file missing"));
     }
 

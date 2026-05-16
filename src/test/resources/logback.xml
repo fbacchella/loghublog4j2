@@ -8,6 +8,10 @@
         <method>connect</method>
         <hwm>1000</hwm>
         <autoCreate>true</autoCreate>
+        <zmqOption>
+            <name>ipv6</name>
+            <value>false</value>
+        </zmqOption>
         <encoder class="fr.loghub.logback.encoder.msgpack.MsgPackEncoder">
             <additionalField>
                 <name>name1</name>

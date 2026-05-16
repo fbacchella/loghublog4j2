@@ -1,50 +1,172 @@
 package fr.loghub.log4j1.zmq;
 
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.function.Supplier;
 
 import org.apache.log4j.spi.ErrorCode;
+import org.zeromq.SocketConfigurator;
 import org.zeromq.SocketType;
+import org.zeromq.Method;
 
 import fr.loghub.log4j1.serializer.SerializerAppender;
 import fr.loghub.logservices.zmq.Logger;
-import fr.loghub.logservices.zmq.Method;
 import fr.loghub.logservices.zmq.Publisher;
 import fr.loghub.logservices.zmq.ZMQConfiguration;
 import lombok.Getter;
 import lombok.Setter;
-import zmq.ZMQ;
+import zmq.io.mechanism.curve.CurveMechanismSettings;
 
 public class ZMQAppender extends SerializerAppender implements Logger {
 
+    private final SocketConfigurator.Builder scb = SocketConfigurator.builder();
     private SocketType type = ZMQConfiguration.DEFAULT_TYPE;
     private Method method = ZMQConfiguration.DEFAULT_METHOD;
     @Getter @Setter
     private String endpoint = null;
     @Getter @Setter
-    private int hwm = -1;
+    private Path privateKeyFile = null;
     @Getter @Setter
-    private int sndHwm = ZMQ.DEFAULT_SEND_HWM;
-    @Getter @Setter
-    private int rcvHwm = ZMQ.DEFAULT_RECV_HWM;
-    @Getter @Setter
-    private long maxMsgSize = ZMQ.DEFAULT_MAX_MSG_SIZE;
-    @Getter @Setter
-    private int linger = ZMQ.DEFAULT_LINGER;
-    @Getter @Setter
-    public String peerPublicKey = null;
-    @Getter @Setter
-    public String privateKeyFile = null;
-    @Getter @Setter
-    public String publicKey = null;
-    @Getter @Setter
-    public boolean autoCreate = false;
-    @Getter @Setter
-    private int backlog = ZMQ.DEFAULT_BACKLOG;
-    @Getter @Setter
-    boolean ipv6 = ZMQ.DEFAULT_IPV6;
+    private boolean autoCreate = false;
 
     private Publisher publisher;
+
+    public void setHwm(int hwm) {
+        scb.recvHwm(hwm);
+        scb.sendHwm(hwm);
+    }
+
+    public void setRcvHwm(int rcvHwm) {
+        scb.recvHwm(rcvHwm);
+    }
+
+    public void setSndHwm(int sndHwm) {
+        scb.sendHwm(sndHwm);
+    }
+
+    public void setMaxMsgSize(long maxMsgSize) {
+        scb.maxMsgSize(maxMsgSize);
+    }
+
+    public void setLinger(int linger) {
+        scb.linger(linger);
+    }
+
+    public void setBacklog(int backlog) {
+        scb.backlog(backlog);
+    }
+
+    public void setIpv6(boolean ipv6) {
+        scb.ipv6(ipv6);
+    }
+
+    public void setAffinity(long affinity) {
+        scb.affinity(affinity);
+    }
+
+    public void setReceiveBufferSize(int receiveBufferSize) {
+        scb.receiveBufferSize(receiveBufferSize);
+    }
+
+    public void setSendBufferSize(int sendBufferSize) {
+        scb.sendBufferSize(sendBufferSize);
+    }
+
+    public void setReceiveTimeOut(int receiveTimeOut) {
+        scb.receiveTimeOut(receiveTimeOut);
+    }
+
+    public void setReconnectIVL(int reconnectIVL) {
+        scb.reconnectIVL(reconnectIVL);
+    }
+
+    public void setReconnectIVLMax(int reconnectIVLMax) {
+        scb.reconnectIVLMax(reconnectIVLMax);
+    }
+
+    public void setSendTimeOut(int sendTimeOut) {
+        scb.sendTimeOut(sendTimeOut);
+    }
+
+    public void setTcpKeepAlive(int tcpKeepAlive) {
+        scb.tcpKeepAlive(tcpKeepAlive);
+    }
+
+    public void setTcpKeepAliveCount(int tcpKeepAliveCount) {
+        scb.tcpKeepAliveCount(tcpKeepAliveCount);
+    }
+
+    public void setTcpKeepAliveIdle(int tcpKeepAliveIdle) {
+        scb.tcpKeepAliveIdle(tcpKeepAliveIdle);
+    }
+
+    public void setTcpKeepAliveInterval(int tcpKeepAliveInterval) {
+        scb.tcpKeepAliveInterval(tcpKeepAliveInterval);
+    }
+
+    public void setXpubVerbose(boolean xpubVerbose) {
+        scb.xpubVerbose(xpubVerbose);
+    }
+
+    public void setTos(int tos) {
+        scb.tos(tos);
+    }
+
+    public void setHeartbeatIvl(int heartbeatIvl) {
+        scb.heartbeatIvl(heartbeatIvl);
+    }
+
+    public void setHeartbeatTimeout(int heartbeatTimeout) {
+        scb.heartbeatTimeout(heartbeatTimeout);
+    }
+
+    public void setHeartbeatTtl(int heartbeatTtl) {
+        scb.heartbeatTtl(heartbeatTtl);
+    }
+
+    public void setHandshakeIvl(int handshakeIvl) {
+        scb.handshakeIvl(handshakeIvl);
+    }
+
+    public void setSocksProxyPort(int socksProxyPort) {
+        scb.socksProxyPort(socksProxyPort);
+    }
+
+    public void setSocksProxyHost(String socksProxyHost) {
+        scb.socksProxyHost(socksProxyHost);
+    }
+
+    public void setXpubNoDrop(boolean xpubNoDrop) {
+        scb.xpubNoDrop(xpubNoDrop);
+    }
+
+    public void setXpubManual(boolean xpubManual) {
+        scb.xpubManual(xpubManual);
+    }
+
+    public void setXpubVerboser(boolean xpubVerboser) {
+        scb.xpubVerboser(xpubVerboser);
+    }
+
+    public void setPlainUsername(String plainUsername) {
+        scb.plainUsername(plainUsername);
+    }
+
+    public void setPlainPassword(String plainPassword) {
+        scb.plainPassword(plainPassword);
+    }
+
+    public void setCurvePublicKey(String curvePublicKey) {
+        scb.curvePublicKey(CurveMechanismSettings.curveKey(curvePublicKey));
+    }
+
+    public void setCurveSecretKey(String curveSecretKey) {
+        scb.curveSecretKey(CurveMechanismSettings.curveKey(curveSecretKey));
+    }
+
+    public void setCurvePeerPublicKey(String curvePeerPublicKey) {
+        scb.curvePeerPublicKey(CurveMechanismSettings.curveKey(curvePeerPublicKey));
+    }
 
     @Override
     protected void subOptions() {
@@ -52,21 +174,16 @@ public class ZMQAppender extends SerializerAppender implements Logger {
             errorHandler.error("Unconfigured endpoint, the ZMQ appender can't log");
             return;
         }
-        ZMQConfiguration.ZMQConfigurationBuilder<ZMQAppender> builder = ZMQConfiguration.builder();
-        ZMQConfiguration<ZMQAppender> config = builder.context(this)
+        scb.endpoint(endpoint);
+        scb.type(type);
+        scb.method(method);
+        ZMQConfiguration<ZMQAppender> config = ZMQConfiguration.<ZMQAppender>builder().context(this)
                        .endpoint(endpoint)
                        .type(type)
                        .method(method)
-                       .maxMsgSize(maxMsgSize)
-                       .sendHwm(hwm != -1 ? hwm : sndHwm)
-                       .recvHwm(hwm != -1 ? hwm : rcvHwm)
-                       .linger(linger)
-                       .peerPublicKey(peerPublicKey)
                        .privateKeyFile(privateKeyFile)
-                       .publicKey(publicKey)
                        .autoCreate(autoCreate)
-                       .backlog(backlog)
-                       .ipv6(ipv6)
+                       .configurator(scb)
                        .build();
         publisher = Publisher.asynchronous("Log4J1ZMQPublishingThread", this, config);
     }

@@ -1,5 +1,6 @@
 package fr.loghub.logservices.zmq;
 
+import java.util.Optional;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -13,7 +14,7 @@ class AsynchronousPublisher extends Thread implements Publisher {
 
     AsynchronousPublisher(String name, Logger logger, ZMQConfiguration<?> config) {
         publisher = new SynchronousPublisher(logger, config);
-        logQueue = new ArrayBlockingQueue<>(config.sendHwm);
+        logQueue = new ArrayBlockingQueue<>(Optional.ofNullable(config.configurator.sendHwm).orElse(100));
         this.logger = logger;
         setName(name);
         setDaemon(true);
@@ -26,7 +27,6 @@ class AsynchronousPublisher extends Thread implements Publisher {
     public void run() {
         try {
             while (!running) {
-                publisher.refreshSocket();
                  // Not a blocking wait, it allows to test if closed every 100 ms
                 // Needed because interrupt deactivated for this thread
                 byte[] log = logQueue.poll(100, TimeUnit.MILLISECONDS);

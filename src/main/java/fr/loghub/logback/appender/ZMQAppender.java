@@ -1,20 +1,21 @@
 package fr.loghub.logback.appender;
 
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.function.Supplier;
 
+import org.zeromq.Method;
+import org.zeromq.SocketConfigurator;
 import org.zeromq.SocketType;
 
 import ch.qos.logback.core.OutputStreamAppender;
 import fr.loghub.logservices.zmq.Logger;
-import fr.loghub.logservices.zmq.Method;
 import fr.loghub.logservices.zmq.Publisher;
 import fr.loghub.logservices.zmq.ZMQConfiguration;
 import lombok.Getter;
 import lombok.Setter;
-import zmq.ZMQ;
 
 public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
 
@@ -49,48 +50,19 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
         }
     }
 
+    private final SocketConfigurator.Builder scb = SocketConfigurator.builder();
     private SocketType type = ZMQConfiguration.DEFAULT_TYPE;
     private Method method = ZMQConfiguration.DEFAULT_METHOD;
     @Getter @Setter
     private String endpoint = null;
     @Getter @Setter
-    private int hwm = -1;
-    @Getter @Setter
-    private int sndHwm = ZMQ.DEFAULT_SEND_HWM;
-    @Getter @Setter
-    private int rcvHwm = ZMQ.DEFAULT_RECV_HWM;
-    @Getter @Setter
-    private long maxMsgSize = ZMQ.DEFAULT_MAX_MSG_SIZE;
-    @Getter @Setter
-    private int linger = ZMQ.DEFAULT_LINGER;
-    @Getter @Setter
-    public String peerPublicKey = null;
-    @Getter @Setter
-    public String privateKeyFile = null;
-    @Getter @Setter
-    public String publicKey = null;
+    public Path privateKeyFile = null;
     @Getter @Setter
     private boolean autoCreate = false;
     @Getter @Setter
-    private int backlog = ZMQ.DEFAULT_BACKLOG;
-    @Getter @Setter
-    boolean ipv6 = ZMQ.DEFAULT_IPV6;
+    private int ioThreads = 1;
 
     private Publisher publisher;
-
-    /**
-     * Define the ØMQ socket type. Current allowed value are PUB or PUSH.
-     *
-     * @param type
-     */
-    public void setType(String type) {
-        try {
-            this.type = SocketType.valueOf(type.toUpperCase(Locale.ENGLISH));
-        } catch (Exception e) {
-            String msg = "[" + type + "] should be one of [PUSH, PUB]" + ", using default ZeroMQ socket type, PUSH by default.";
-            addError(msg, e);
-        }
-    }
 
     /**
      * @return the ØMQ socket type.
@@ -99,18 +71,53 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
         return type.toString();
     }
 
-    /**
-     * The <b>method</b> define the connection method for the ØMQ socket. It can take the value
-     * connect or bind, it's case-insensitive.
-     * @param method
-     */
+    public String getMethod() {
+        return method.toString();
+    }
+
     public void setMethod(String method) {
-        try {
-            this.method = Method.valueOf(method.toUpperCase(Locale.ENGLISH));
-        } catch (Exception e) {
-            String msg = "[" + type + "] should be one of [connect, bind]" + ", using default ZeroMQ socket type, connect by default.";
-            addError(msg, e);
+        this.method = Method.valueOf(method.toUpperCase(Locale.ENGLISH));
+    }
+
+    public void setType(String type) {
+        this.type = SocketType.valueOf(type.toUpperCase(Locale.ENGLISH));
+    }
+
+    public void setHwm(int hwm) {
+        scb.recvHwm(hwm);
+        scb.sendHwm(hwm);
+    }
+
+    public void setRcvHwm(int rcvHwm) {
+        scb.recvHwm(rcvHwm);
+    }
+
+    public void setSndHwm(int sndHwm) {
+        scb.sendHwm(sndHwm);
+    }
+
+    public void setMaxMsgSize(long maxMsgSize) {
+        scb.maxMsgSize(maxMsgSize);
+    }
+
+    public void setLinger(int linger) {
+        scb.linger(linger);
+    }
+
+    public void setBacklog(int backlog) {
+        scb.backlog(backlog);
+    }
+
+    public void setIpv6(boolean ipv6) {
+        scb.ipv6(ipv6);
+    }
+
+    public void addZmqOption(ZMQOption entry) {
+        if (entry.getName() == null || entry.getName().isEmpty()) {
+            addWarn("A <property> element is missing its 'name' attribute, skipping.");
+            return;
         }
+        scb.setOption(entry.getName(), entry.getValue());
     }
 
     @Override
@@ -119,21 +126,13 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
             addError("Unconfigured endpoint, the ZMQ appender can't log");
             return;
         }
-        ZMQConfiguration.ZMQConfigurationBuilder<ZMQAppender<E>> builder = ZMQConfiguration.builder();
-        ZMQConfiguration<ZMQAppender<E>> config = builder.context(this)
+        ZMQConfiguration<ZMQAppender<E>> config = ZMQConfiguration.<ZMQAppender<E>>builder().context(this)
                                                          .endpoint(endpoint)
                                                          .type(type)
                                                          .method(method)
-                                                         .maxMsgSize(maxMsgSize)
-                                                         .sendHwm(hwm != -1 ? hwm : sndHwm)
-                                                         .recvHwm(hwm != -1 ? hwm : rcvHwm)
-                                                         .linger(linger)
-                                                         .peerPublicKey(peerPublicKey)
                                                          .privateKeyFile(privateKeyFile)
-                                                         .publicKey(publicKey)
                                                          .autoCreate(autoCreate)
-                                                         .ipv6(ipv6)
-                                                         .backlog(backlog)
+                                                         .configurator(scb)
                                                          .build();
 
         publisher = Publisher.asynchronous("Log4JZMQPublishingThread", this, config);

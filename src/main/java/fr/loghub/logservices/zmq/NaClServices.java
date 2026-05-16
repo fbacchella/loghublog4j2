@@ -1,5 +1,6 @@
 package fr.loghub.logservices.zmq;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -18,8 +19,8 @@ import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.zeromq.Curve;
 import org.zeromq.ZConfig;
-import org.zeromq.ZMQ;
 
 import fr.loghub.naclprovider.NaclPrivateKeySpec;
 import fr.loghub.naclprovider.NaclProvider;
@@ -40,9 +41,9 @@ class NaClServices {
         }
     }
 
-    byte[] readPrivateKey(String path) {
+    byte[] readPrivateKey(Path path) {
         try {
-            byte[] key = Files.readAllBytes(Paths.get(path));
+            byte[] key = Files.readAllBytes(path);
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(key);
             PrivateKey pv = kf.generatePrivate(keySpec);
             NaclPrivateKeySpec naclspec = kf.getKeySpec(pv, NaclPrivateKeySpec.class);
@@ -52,9 +53,9 @@ class NaClServices {
         }
     }
 
-    byte[] writePair(String privatePath) {
+    byte[] writePair(Path privatePath) {
         Pattern filePattern = Pattern.compile("(.*?)(\\.[a-zA-Z0-9]+)?$");
-        Matcher m = filePattern.matcher(privatePath);
+        Matcher m = filePattern.matcher(privatePath.toString());
         if (!m.matches()) {
             throw new IllegalArgumentException("Invalid file path for the curve secret key: " + privatePath);
         }
@@ -77,8 +78,10 @@ class NaClServices {
 
             // Building the zpl file
             ZConfig zconf = new ZConfig("root", null);
-            zconf.putValue("curve/public-key", ZMQ.Curve.z85Encode(naclpubspec.getBytes()));
-            zconf.save(fileRadix + ".zpl");
+            zconf.putValue("curve/public-key", Curve.z85Encode(naclpubspec.getBytes()));
+            try(FileWriter fw = new FileWriter(fileRadix + ".zpl")) {
+                zconf.save(fw);
+            }
             return naclpubspec.getBytes();
         } catch (IOException | InvalidKeySpecException ex) {
             throw new IllegalArgumentException(ex);

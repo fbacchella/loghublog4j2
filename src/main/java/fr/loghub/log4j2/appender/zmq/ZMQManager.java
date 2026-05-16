@@ -19,8 +19,8 @@ public class ZMQManager extends AbstractManager implements Logger {
     private final Publisher publisher;
 
     private ZMQManager(String name, ZMQConfiguration<LoggerContext> configuration) {
-        super(configuration.getContext(), name);
-        if (configuration.getContext() instanceof AsyncLoggerContext) {
+        super(configuration.context, name);
+        if (configuration.context instanceof AsyncLoggerContext) {
             publisher = Publisher.synchronous(this, configuration);
         } else {
             publisher = Publisher.asynchronous("Log4JZMQPublishingThread",this, configuration);
