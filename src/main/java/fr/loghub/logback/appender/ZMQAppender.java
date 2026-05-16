@@ -133,6 +133,7 @@ public class ZMQAppender<E> extends OutputStreamAppender<E> implements Logger {
                                                          .privateKeyFile(privateKeyFile)
                                                          .autoCreate(autoCreate)
                                                          .configurator(scb)
+                                                         .ioThreads(ioThreads)
                                                          .build();
 
         publisher = Publisher.asynchronous("Log4JZMQPublishingThread", this, config);

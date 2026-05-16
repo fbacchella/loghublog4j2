@@ -28,6 +28,8 @@ public class ZMQAppender extends SerializerAppender implements Logger {
     private Path privateKeyFile = null;
     @Getter @Setter
     private boolean autoCreate = false;
+    @Getter @Setter
+    private int ioThreads = 1;
 
     private Publisher publisher;
 
@@ -181,6 +183,7 @@ public class ZMQAppender extends SerializerAppender implements Logger {
                        .endpoint(endpoint)
                        .type(type)
                        .method(method)
+                       .ioThreads(ioThreads)
                        .privateKeyFile(privateKeyFile)
                        .autoCreate(autoCreate)
                        .configurator(scb)

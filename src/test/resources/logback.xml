@@ -3,6 +3,7 @@
     <statusListener class="fr.loghub.logback.StatusListener" />
 
     <appender name="ZMQAppender" class="fr.loghub.logback.appender.ZMQAppender">
+        <ioThreads>1</ioThreads>
         <endpoint>tcp://localhost:${fr.loghub.logback.test.port}</endpoint>
         <type>push</type>
         <method>connect</method>

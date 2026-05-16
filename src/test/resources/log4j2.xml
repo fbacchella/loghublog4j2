@@ -2,6 +2,7 @@
 <Configuration status="info" packages="fr.loghub.log4j2" verbose="true">
     <Appenders>
         <ZMQ name="ZMQAppender">
+            <ioThreads>1</ioThreads>
             <endpoint>tcp://localhost:${sys:fr.loghub.log4j2.test.port}</endpoint>
             <type>push</type>
             <method>connect</method>

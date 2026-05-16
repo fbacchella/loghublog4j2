@@ -39,6 +39,9 @@ public class ZMQAppender extends AbstractAppender {
         @PluginBuilderAttribute("method")
         Method method = ZMQConfiguration.DEFAULT_METHOD;
 
+        @PluginBuilderAttribute("ioThreads")
+        int ioThreads = -1;
+
         @PluginBuilderAttribute("hwm")
         int hwm = -1;
 
@@ -68,6 +71,11 @@ public class ZMQAppender extends AbstractAppender {
 
         @PluginElement("ZMQSocketProperty")
         private ZMQSocketProperty[] entries;
+
+        public ZMQBuilder setIoThreads(int ioThreads) {
+            this.ioThreads = ioThreads;
+            return this;
+        }
 
         public ZMQBuilder setEndpoint(String endpoint) {
             this.endpoint = endpoint;
@@ -160,6 +168,7 @@ public class ZMQAppender extends AbstractAppender {
         ZMQConfiguration.Builder<LoggerContext> confBuilder = ZMQConfiguration.<LoggerContext>builder();
         ZMQConfiguration<LoggerContext> zconf = confBuilder.context(builder.getConfiguration().getLoggerContext())
                        .configurator(builder.scb)
+                       .ioThreads(builder.ioThreads)
                        .endpoint(builder.endpoint)
                        .type(builder.type)
                        .method(builder.method)
