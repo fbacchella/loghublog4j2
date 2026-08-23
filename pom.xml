@@ -8,7 +8,24 @@
     <packaging>jar</packaging>
 
     <name>loghublog4j2</name>
+    <description>Log4j2, Log4j1, Logback and Reload4j plugins for loghub, providing an efficient MsgPack layout, a ØMQ appender and a GC events appender.</description>
     <url>https://github.com/fbacchella/loghublog4j2</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>fbacchella</id>
+            <name>Fabrice Bacchella</name>
+            <url>https://github.com/fbacchella</url>
+        </developer>
+    </developers>
 
     <properties>
         <!-- The project should have a source encoding set. -->
@@ -402,6 +419,14 @@
                 <artifactId>versions-maven-plugin</artifactId>
             </plugin>
             <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <executions>
@@ -539,7 +564,7 @@
                 <plugin>
                     <groupId>org.sonatype.central</groupId>
                     <artifactId>central-publishing-maven-plugin</artifactId>
-                    <version>0.10.0</version>
+                    <version>0.11.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -677,10 +702,6 @@
             <id>central</id>
             <url>https://central.sonatype.com/repository/maven-snapshots</url>
         </snapshotRepository>
-        <repository>
-            <id>central</id>
-            <url>https://repo1.maven.org/maven2</url>
-        </repository>
     </distributionManagement>
 
     <repositories>
