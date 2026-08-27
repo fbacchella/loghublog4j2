@@ -1,8 +1,5 @@
 package fr.loghub.log4j1.serializer;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
@@ -13,6 +10,9 @@ import java.util.Map;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.ErrorCode;
 import org.apache.log4j.spi.LoggingEvent;
+
+import lombok.Getter;
+import lombok.Setter;
 
 public abstract class SerializerAppender extends AppenderSkeleton {
 

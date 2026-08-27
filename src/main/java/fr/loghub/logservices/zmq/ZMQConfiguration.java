@@ -5,9 +5,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
+import org.zeromq.Method;
 import org.zeromq.SocketConfigurator;
 import org.zeromq.SocketType;
-import org.zeromq.Method;
 
 import com.neilalexander.jnacl.crypto.curve25519;
 import com.neilalexander.jnacl.crypto.curve25519xsalsa20poly1305;

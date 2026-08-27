@@ -1,9 +1,5 @@
 package fr.loghub.log4j1.msgpack;
 
-import fr.loghub.log4j1.FieldsName;
-import fr.loghub.log4j1.serializer.Serializer;
-import fr.loghub.logservices.msgpack.MsgPacker;
-
 import java.io.IOException;
 import java.time.Instant;
 import java.util.HashMap;
@@ -15,6 +11,10 @@ import org.msgpack.core.MessageBufferPacker;
 import org.msgpack.core.MessagePack;
 import org.msgpack.value.Value;
 import org.msgpack.value.ValueFactory;
+
+import fr.loghub.log4j1.FieldsName;
+import fr.loghub.log4j1.serializer.Serializer;
+import fr.loghub.logservices.msgpack.MsgPacker;
 
 public class MsgPackSerializer implements Serializer {
 

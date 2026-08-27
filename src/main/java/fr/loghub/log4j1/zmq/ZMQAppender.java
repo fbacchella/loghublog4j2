@@ -5,9 +5,9 @@ import java.util.Locale;
 import java.util.function.Supplier;
 
 import org.apache.log4j.spi.ErrorCode;
+import org.zeromq.Method;
 import org.zeromq.SocketConfigurator;
 import org.zeromq.SocketType;
-import org.zeromq.Method;
 
 import fr.loghub.log4j1.serializer.SerializerAppender;
 import fr.loghub.logservices.zmq.Logger;
