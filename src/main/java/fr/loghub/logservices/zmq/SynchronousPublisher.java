@@ -101,7 +101,14 @@ class SynchronousPublisher implements Publisher {
     public synchronized boolean send(byte[] log) {
         if (log != null && !closed) {
             try {
+                // Ensure the socket is created, even when this publisher is used
+                // directly (e.g. with an AsyncLoggerContext) without a dedicated
+                // thread calling refreshSocket(). refreshSocket() is idempotent and
+                // also recreates the socket after a previous connection failure.
+                refreshSocket();
                 socket.send(log, zmq.ZMQ.ZMQ_DONTWAIT);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             } catch (zmq.ZError.IOException | java.nio.channels.ClosedSelectorException | org.zeromq.ZMQException e) {
                 // If it's not closed, drop the socket, to recreate a new one
                 if (!closed) {
